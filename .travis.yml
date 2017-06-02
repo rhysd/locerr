@@ -3,5 +3,8 @@ go: 1.x
 os:
   - linux
   - osx
+before_install:
+  - go get github.com/mattn/goveralls
 script:
   - go test ./...
+  - goveralls -service=travis-ci
