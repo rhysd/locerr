@@ -107,5 +107,5 @@ Note that on Windows always color is disabled because ANSI color sequence is not
 [loc document]: https://godoc.org/github.com/rhysd/loc
 [build badge]: https://travis-ci.org/rhysd/loc.svg?branch=master
 [travis result]: https://travis-ci.org/rhysd/loc
-[coverage status]: https://coveralls.io/repos/github/rhysd/loc/badge.svg?branch=master
-[coverage result]: https://coveralls.io/github/rhysd/loc?branch=master
+[coverage status]: https://codecov.io/gh/rhysd/loc/branch/master/graph/badge.svg
+[coverage result]: https://codecov.io/gh/rhysd/loc

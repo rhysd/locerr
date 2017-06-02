@@ -3,8 +3,12 @@ go: 1.x
 os:
   - linux
   - osx
+
 before_install:
-  - go get github.com/mattn/goveralls
+  - go get -t -v ./...
+
 script:
-  - go test ./...
-  - goveralls -service=travis-ci
+  - go test -coverprofile=coverage.txt -covermode=count ./...
+
+after_success:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash <(curl -s https://codecov.io/bash); fi
