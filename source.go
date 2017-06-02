@@ -9,8 +9,8 @@ import (
 
 // Source represents Dachs source code file. It may be a file on filesystem, stdin or dummy file.
 type Source struct {
-	// Name of the file. <stdin> if it is stdin. <dummy> if it is a dummy source.
-	Name string
+	// Path of the file. <stdin> if it is stdin. <dummy> if it is a dummy source.
+	Path string
 	// Code contained in this source.
 	Code []byte
 	// Exists indicates this source exists in filesystem or not.
@@ -49,10 +49,10 @@ func (src *Source) BaseName() string {
 	if !src.Exists {
 		return "out"
 	}
-	b := filepath.Base(src.Name)
+	b := filepath.Base(src.Path)
 	return strings.TrimSuffix(b, filepath.Ext(b))
 }
 
 func (src *Source) String() string {
-	return "source:" + src.Name
+	return "source:" + src.Path
 }

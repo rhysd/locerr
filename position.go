@@ -25,7 +25,7 @@ type Pos struct {
 }
 
 func (p Pos) String() string {
-	f := p.File.Name
+	f := p.File.Path
 	if p.File.Exists && currentDir != "" && filepath.HasPrefix(f, currentDir) {
 		f, _ = filepath.Rel(currentDir, f)
 	}

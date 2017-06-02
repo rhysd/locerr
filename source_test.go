@@ -11,8 +11,8 @@ func TestReadFromFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !strings.HasSuffix(s.Name, "source.go") {
-		t.Errorf("Unexpected file name %s", s.Name)
+	if !strings.HasSuffix(s.Path, "source.go") {
+		t.Errorf("Unexpected file name %s", s.Path)
 	}
 
 	if s.Code == nil {
@@ -37,8 +37,8 @@ func TestReadFromStdin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if s.Name != "<stdin>" {
-		t.Errorf("Unexpected file name %s", s.Name)
+	if s.Path != "<stdin>" {
+		t.Errorf("Unexpected file name %s", s.Path)
 	}
 
 	if s.Code == nil {
@@ -71,7 +71,7 @@ func TestBaseName(t *testing.T) {
 	} {
 		actual := tc.source.BaseName()
 		if tc.expected != actual {
-			t.Errorf("Expected base name of '%s' to be '%s', but actually it was '%s'", tc.source.Name, tc.expected, actual)
+			t.Errorf("Expected base name of '%s' to be '%s', but actually it was '%s'", tc.source.Path, tc.expected, actual)
 		}
 	}
 }

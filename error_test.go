@@ -108,6 +108,22 @@ func TestNote(t *testing.T) {
 			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
 		}
 	}
+
+	want =
+		`Error: This is original error text! (at <dummy>:1:4)
+  Note: This is additional error text! (at <dummy>:1:4)
+
+> age prelude
+> 
+> imp
+
+`
+	s, e = testMakeRange()
+	err := Note(s, e, NewError(s, e, "This is original error text!"), "This is additional error text!")
+	got := err.Error()
+	if got != want {
+		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+	}
 }
 
 func TestNoteAt(t *testing.T) {

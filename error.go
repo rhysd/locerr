@@ -9,13 +9,13 @@ import (
 )
 
 func init() {
+	// FIXME:
+	// On Windows, ANSI sequences are not available on cmd.exe.
+	// go-colorable cannot help to solve this because it only provides writers to stdout or
+	// stderr.
+	// At least I need to improve the check. Even if running on windows, WLS would be able to
+	// handle ANSI sequences.
 	if runtime.GOOS == "windows" {
-		// FIXME:
-		// On Windows, ANSI sequences are not available on cmd.exe.
-		// go-colorable cannot help to solve this because it only provides writers to stdout or
-		// stderr.
-		// At least I need to improve the check. Even if running on windows, WLS would be able to
-		// handle ANSI sequences.
 		color.NoColor = true
 	}
 }
