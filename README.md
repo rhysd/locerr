@@ -67,6 +67,13 @@ func main() {
 	// Assume that you find additional information (location of variable and its type). Then you can add some
 	// notes to the error. Notes can be added by wrapping errors like pkg/errors library.
 
+	prev := loc.Pos{
+		Offset: 26,
+		Line:   4,
+		Column: 1,
+		File:   src,
+	}
+
 	err = err.NoteAt(prev, "Defined here at first")
 	err = err.NoteAt(prev, "Previously defined as int")
 

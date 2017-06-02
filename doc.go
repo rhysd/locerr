@@ -6,6 +6,8 @@ code and an error related to specific range or position in source.
 It's important to make a good error when compilation or execution errors found. loc helps it.
 This library is actually used in some my compiler implementation.
 
+Repository: https://github.com/rhysd/loc
+
 At first you should gain entire source as *Source instance.
 
     code :=
@@ -43,6 +45,13 @@ error interface so it can be handled like other error types.
 
 Assume that you find additional information (location of variable and its type). Then you can add some
 notes to the error. Notes can be added by wrapping errors like pkg/errors library.
+
+    prev := loc.Pos{
+    	Offset: 26,
+    	Line:   4,
+    	Column: 1,
+    	File:   src,
+    }
 
     err = err.NoteAt(prev, "Defined here at first")
     err = err.NoteAt(prev, "Previously defined as int")
