@@ -3,6 +3,7 @@ package loc
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"runtime"
 	"testing"
 )
 
@@ -210,8 +211,14 @@ func TestSetColor(t *testing.T) {
 		t.Fatal("Color should be disabled")
 	}
 	SetColor(true)
-	if color.NoColor {
-		t.Fatal("Color should be enabled")
+	if runtime.GOOS == "windows" {
+		if !color.NoColor {
+			t.Fatal("Color should be disabled (2)")
+		}
+	} else {
+		if color.NoColor {
+			t.Fatal("Color should be enabled")
+		}
 	}
 	SetColor(false)
 	if !color.NoColor {
