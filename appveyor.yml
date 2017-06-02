@@ -1,0 +1,15 @@
+version: "{build}"
+clone_depth: 1
+clone_folder: c:\gopath\src\github.com\rhysd\loc
+environment:
+    GOPATH: c:\gopath
+install:
+    - echo %PATH%
+    - echo %GOPATH%
+    - go version
+    - go env
+    - go get -v -t ./...
+build: off
+test_script:
+    - go test ./...
+deploy: off
