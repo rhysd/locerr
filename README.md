@@ -110,5 +110,5 @@ Note that on Windows always color is disabled because ANSI color sequence is not
 [travis result]: https://travis-ci.org/rhysd/loc
 [coverage status]: https://codecov.io/gh/rhysd/loc/branch/master/graph/badge.svg
 [coverage result]: https://codecov.io/gh/rhysd/loc
-[windows uild badge]: https://ci.appveyor.com/api/projects/status/4d3bkiabf088gboi/branch/master?svg=true
+[windows build badge]: https://ci.appveyor.com/api/projects/status/4d3bkiabf088gboi/branch/master?svg=true
 [appveyor result]: https://ci.appveyor.com/project/rhysd/loc/branch/master
