@@ -2,6 +2,7 @@ package loc
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"testing"
 )
 
@@ -199,5 +200,13 @@ func TestCodeIsEmpty(t *testing.T) {
 
 	if want != got {
 		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+	}
+}
+
+func TestSetColor(t *testing.T) {
+	defer func() { SetColor(true) }()
+	SetColor(false)
+	if !color.NoColor {
+		t.Fatal("Color should be disabled")
 	}
 }

@@ -20,8 +20,15 @@ func init() {
 	}
 }
 
+// SetColor controls font should be colorful or not.
+func SetColor(enabled bool) {
+	if runtime.GOOS == "windows" {
+		return
+	}
+	color.NoColor = !enabled
+}
+
 var (
-	gray = color.New(color.FgHiBlack).SprintfFunc()
 	bold = color.New(color.Bold).SprintFunc()
 )
 
@@ -42,7 +49,7 @@ func (err *Error) Error() string {
 	//   ...
 	buf.WriteString(color.RedString("Error: "))
 	buf.WriteString(bold(err.Messages[0]))
-	buf.WriteString(gray(" (at %s)", s.String()))
+	buf.WriteString(color.HiBlackString(" (at %s)", s.String()))
 	for _, msg := range err.Messages[1:] {
 		buf.WriteString(color.GreenString("\n  Note: "))
 		buf.WriteString(msg)
@@ -84,7 +91,7 @@ func (err *Error) Notef(format string, args ...interface{}) *Error {
 
 // NoteAt stacks the additional message upon current error with position.
 func (err *Error) NoteAt(pos Pos, msg string) *Error {
-	at := gray("(at %s)", pos.String())
+	at := color.HiBlackString("(at %s)", pos.String())
 	err.Messages = append(err.Messages, fmt.Sprintf("%s %s", msg, at))
 	return err
 }
