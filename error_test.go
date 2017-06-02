@@ -1,0 +1,187 @@
+package loc
+
+import (
+	"fmt"
+	"testing"
+)
+
+func testMakeRange() (Pos, Pos) {
+	s := NewDummySource(
+		`package prelude
+
+import (
+	"testing"
+)`,
+	)
+
+	start := Pos{4, 1, 4, s}
+	end := Pos{20, 3, 3, s}
+	return start, end
+}
+
+func testMakePos() Pos {
+	p, _ := testMakeRange()
+	return p
+}
+
+func TestNewError(t *testing.T) {
+	want :=
+		`Error: This is error text! (at <dummy>:1:4)
+
+> age prelude
+> 
+> imp
+
+`
+
+	s, e := testMakeRange()
+	errs := []*Error{
+		NewError(s, e, "This is error text!"),
+		NewErrorf(s, e, "This %s error %s!", "is", "text"),
+	}
+	for _, err := range errs {
+		got := err.Error()
+		if got != want {
+			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+		}
+	}
+}
+
+func TestNewErrorAt(t *testing.T) {
+	want := "Error: This is error text! (at <dummy>:1:4)"
+	for _, err := range []*Error{
+		NewErrorAt(testMakePos(), "This is error text!"),
+		NewErrorfAt(testMakePos(), "This is %s text!", "error"),
+	} {
+		got := err.Error()
+		if got != want {
+			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+		}
+	}
+}
+
+func TestWithRange(t *testing.T) {
+	want :=
+		`Error: This is an error text! (at <dummy>:1:4)
+
+> age prelude
+> 
+> imp
+
+`
+
+	s, e := testMakeRange()
+	err := WithRange(s, e, fmt.Errorf("This is an error text!"))
+	got := err.Error()
+	if got != want {
+		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+	}
+}
+
+func TestWithPos(t *testing.T) {
+	want := "Error: This is wrapped error text! (at <dummy>:1:4)"
+	got := WithPos(testMakePos(), fmt.Errorf("This is wrapped error text!")).Error()
+	if got != want {
+		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+	}
+}
+
+func TestNote(t *testing.T) {
+	want :=
+		`Error: This is original error text! (at <dummy>:1:4)
+  Note: This is additional error text!
+
+> age prelude
+> 
+> imp
+
+`
+
+	s, e := testMakeRange()
+	errs := []*Error{
+		Note(s, e, fmt.Errorf("This is original error text!"), "This is additional error text!"),
+		Notef(s, e, fmt.Errorf("This is original error text!"), "This is %s error text!", "additional"),
+	}
+	for _, err := range errs {
+		got := err.Error()
+		if got != want {
+			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+		}
+	}
+}
+
+func TestNoteAt(t *testing.T) {
+	want := "Error: This is original error text! (at <dummy>:1:4)\n  Note: This is additional error text!"
+	pos := testMakePos()
+	original := fmt.Errorf("This is original error text!")
+	for _, err := range []*Error{
+		NoteAt(pos, original, "This is additional error text!"),
+		NotefAt(pos, original, "This is additional %s!", "error text"),
+	} {
+		got := err.Error()
+		if got != want {
+			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+		}
+	}
+}
+
+func TestNoteMethods(t *testing.T) {
+	want :=
+		`Error: This is original error text! (at <dummy>:1:4)
+  Note: This is additional error text!
+
+> age prelude
+> 
+> imp
+
+`
+
+	s, e := testMakeRange()
+	errs := []*Error{
+		NewError(s, e, "This is original error text!").Note("This is additional error text!"),
+		NewError(s, e, "This is original error text!").Notef("This is %s!", "additional error text"),
+	}
+	for _, err := range errs {
+		got := err.Error()
+		if got != want {
+			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+		}
+	}
+}
+
+func TestNoteMethodsWithPos(t *testing.T) {
+	want :=
+		`Error: This is original error text! (at <dummy>:1:4)
+  Note: This is additional error text! (at <dummy>:1:4)
+
+> age prelude
+> 
+> imp
+
+`
+
+	s, e := testMakeRange()
+
+	errs := []*Error{
+		NewError(s, e, "This is original error text!").NoteAt(s, "This is additional error text!"),
+		NewError(s, e, "This is original error text!").NotefAt(s, "This is %s!", "additional error text"),
+	}
+	for _, err := range errs {
+		got := err.Error()
+		if got != want {
+			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+		}
+	}
+}
+
+func TestCodeIsEmpty(t *testing.T) {
+	s := NewDummySource("")
+	p := Pos{0, 1, 1, s}
+	err := NewError(p, p, "This is error text!")
+	want := "Error: This is error text! (at <dummy>:1:1)"
+	got := err.Error()
+
+	if want != got {
+		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+	}
+}
