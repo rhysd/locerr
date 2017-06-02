@@ -3,13 +3,22 @@ clone_depth: 1
 clone_folder: c:\gopath\src\github.com\rhysd\loc
 environment:
     GOPATH: c:\gopath
+
 install:
     - echo %PATH%
     - echo %GOPATH%
     - go version
     - go env
     - go get -v -t ./...
+
 build: off
+
 test_script:
-    - go test ./...
+    - go test -coverprofile=coverage.txt -covermode=count ./...
+
+after_test:
+    - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
+    - pip install codecov
+    - codecov -f "coverage.txt"
+
 deploy: off
