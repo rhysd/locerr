@@ -1,5 +1,6 @@
 :x: loc
 =======
+[![Build Status][build badge]][travis result]
 
 [loc][loc document] is a small library to make a nice-looking error with source location information.
 It provides a struct to represent a source file, a specific position in code and an error related to
@@ -94,3 +95,5 @@ of error message
 Please see [documentation][loc document] to know whole APIs.
 
 [loc document]: https://godoc.org/github.com/rhysd/loc
+[build badge]: https://travis-ci.org/rhysd/loc.svg?branch=master
+[travis result]: https://travis-ci.org/rhysd/loc
