@@ -102,6 +102,8 @@ of error message
 
 Please see [documentation][loc document] to know whole APIs.
 
+Note that on Windows always color is disabled because ANSI color sequence is not availale on CMD.exe.
+
 [loc document]: https://godoc.org/github.com/rhysd/loc
 [build badge]: https://travis-ci.org/rhysd/loc.svg?branch=master
 [travis result]: https://travis-ci.org/rhysd/loc

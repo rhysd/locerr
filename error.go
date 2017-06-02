@@ -22,10 +22,7 @@ func init() {
 
 // SetColor controls font should be colorful or not.
 func SetColor(enabled bool) {
-	if runtime.GOOS == "windows" {
-		return
-	}
-	color.NoColor = !enabled
+	color.NoColor = !enabled || runtime.GOOS == "windows"
 }
 
 var (

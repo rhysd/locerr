@@ -209,4 +209,12 @@ func TestSetColor(t *testing.T) {
 	if !color.NoColor {
 		t.Fatal("Color should be disabled")
 	}
+	SetColor(true)
+	if color.NoColor {
+		t.Fatal("Color should be enabled")
+	}
+	SetColor(false)
+	if !color.NoColor {
+		t.Fatal("Color should be disabled (2)")
+	}
 }
