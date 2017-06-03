@@ -46,13 +46,19 @@ func (err *Error) Error() string {
 	//   ...
 	buf.WriteString(color.RedString("Error: "))
 	buf.WriteString(bold(err.Messages[0]))
-	buf.WriteString(color.HiBlackString(" (at %s)", s.String()))
+	if s.File != nil {
+		buf.WriteString(color.HiBlackString(" (at %s)", s.String()))
+	}
 	for _, msg := range err.Messages[1:] {
 		buf.WriteString(color.GreenString("\n  Note: "))
 		buf.WriteString(msg)
 	}
 
 	if err.End.File == nil {
+		return buf.String()
+	}
+
+	if s.File == nil {
 		return buf.String()
 	}
 
@@ -128,25 +134,38 @@ func WithPos(pos Pos, err error) *Error {
 	return NewErrorAt(pos, err.Error())
 }
 
-// Note adds range information and stack additional message to the original error.
-func Note(start, end Pos, err error, msg string) *Error {
+// Note adds note to the given error. If given error is not loc.Error, it's converted into loc.Error.
+func Note(err error, msg string) *Error {
+	if err, ok := err.(*Error); ok {
+		return err.Note(msg)
+	}
+	return &Error{Pos{}, Pos{}, []string{err.Error(), msg}}
+}
+
+// NoteIn adds range information and stack additional message to the original error. If given error is not loc.Error, it's converted into loc.Error.
+func NoteIn(start, end Pos, err error, msg string) *Error {
 	if err, ok := err.(*Error); ok {
 		return err.NoteAt(start, msg)
 	}
 	return &Error{start, end, []string{err.Error(), msg}}
 }
 
-// NoteAt adds positional information and stack additional message to the original error.
+// NoteAt adds positional information and stack additional message to the original error. If given error is not loc.Error, it's converted into loc.Error.
 func NoteAt(pos Pos, err error, msg string) *Error {
-	return Note(pos, Pos{}, err, msg)
+	return NoteIn(pos, Pos{}, err, msg)
 }
 
-// Notef adds range information and stack additional formatted message to the original error.
-func Notef(start, end Pos, err error, format string, args ...interface{}) *Error {
-	return Note(start, end, err, fmt.Sprintf(format, args...))
+// Notef adds note to the given error. Description will be created following given format and arguments. If given error is not loc.Error, it's converted into loc.Error.
+func Notef(err error, format string, args ...interface{}) *Error {
+	return Note(err, fmt.Sprintf(format, args...))
 }
 
-// NotefAt adds positional information and stack additional formatted message to the original error.
+// NotefIn adds range information and stack additional formatted message to the original error. If given error is not loc.Error, it's converted into loc.Error.
+func NotefIn(start, end Pos, err error, format string, args ...interface{}) *Error {
+	return NoteIn(start, end, err, fmt.Sprintf(format, args...))
+}
+
+// NotefAt adds positional information and stack additional formatted message to the original error If given error is not loc.Error, it's converted into loc.Error..
 func NotefAt(pos Pos, err error, format string, args ...interface{}) *Error {
-	return Note(pos, Pos{}, err, fmt.Sprintf(format, args...))
+	return NoteIn(pos, Pos{}, err, fmt.Sprintf(format, args...))
 }
