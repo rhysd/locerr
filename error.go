@@ -58,10 +58,6 @@ func (err *Error) Error() string {
 		return buf.String()
 	}
 
-	if s.File == nil {
-		return buf.String()
-	}
-
 	snip := string(s.File.Code[s.Offset:err.End.Offset])
 	if snip == "" {
 		return buf.String()
