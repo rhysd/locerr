@@ -12,9 +12,9 @@ func TestExample(t *testing.T) {
 		`package main
 
 func main() {
-	blah := 42
+	foo := 42
 
-	blah := true
+	foo := true
 }`
 	src := NewDummySource(code)
 
@@ -61,5 +61,5 @@ func main() {
 	//     Note: Defined here at first (at <dummy>:4:1)
 	//     Note: Previously defined as int (at <dummy>:4:1)
 	//
-	// >       blah := true
+	// >       foo := true
 }

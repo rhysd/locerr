@@ -37,9 +37,9 @@ func main() {
 		`package main
 
 func main() {
-	blah := 42
+	foo := 42
 
-	blah := true
+	foo := true
 }`
 	src := loc.NewDummySource(code)
 
@@ -91,7 +91,7 @@ Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
     Note: Defined here at first (at <dummy>:4:1)
     Note: Previously defined as int (at <dummy>:4:1)
 
->       blah := true
+>       foo := true
 ```
 
 <img src="https://github.com/rhysd/ss/blob/master/loc/output.png?raw=true" width="371" alt="output screenshot"/>

@@ -14,9 +14,9 @@ At first you should gain entire source as *Source instance.
     	`package main
 
     func main() {
-    	blah := 42
+    	foo := 42
 
-    	blah := true
+    	foo := true
     }
     `
     src := loc.NewDummySource(code)
@@ -64,7 +64,7 @@ Finally you can see the result!
     //   Note: Defined here at first (at <dummy>:4:1)
     //   Note: Previously defined as int (at <dummy>:4:1)
     //
-    // >       blah := true
+    // >       foo := true
     //
 
 Labels such as 'Error:' or 'Notes:' are colorized. Main error message is emphasized with bold font.
