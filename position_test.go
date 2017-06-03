@@ -14,6 +14,14 @@ func TestStringizePos(t *testing.T) {
 	}
 }
 
+func TestStringizeUnknownFile(t *testing.T) {
+	p := Pos{}
+	want := "<unknown>:0:0"
+	if p.String() != want {
+		t.Fatal("Unexpected position", p.String(), "wanted", want)
+	}
+}
+
 func TestPosStringCanonicalPath(t *testing.T) {
 	f, err := filepath.Abs("position_test.go")
 	if err != nil {
