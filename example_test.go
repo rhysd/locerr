@@ -38,7 +38,7 @@ func main() {
 	// NewError or other factory functions make a new error instance with the range. Error instance implements
 	// error interface so it can be handled like other error types.
 
-	err := NewError(start, end, "Found duplicate symbol 'foo'")
+	err := ErrorIn(start, end, "Found duplicate symbol 'foo'")
 
 	// Assume that you find additional information (location of variable and its type). Then you can add some
 	// notes to the error. Notes can be added by wrapping errors like pkg/errors library.

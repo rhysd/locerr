@@ -104,34 +104,34 @@ func (err *Error) NotefAt(pos Pos, format string, args ...interface{}) *Error {
 	return err.NoteAt(pos, fmt.Sprintf(format, args...))
 }
 
-// NewError makes a new compilation error with the range.
-func NewError(start, end Pos, msg string) *Error {
+// ErrorIn makes a new compilation error with the range.
+func ErrorIn(start, end Pos, msg string) *Error {
 	return &Error{start, end, []string{msg}}
 }
 
-// NewErrorAt makes a new compilation error with the position.
-func NewErrorAt(pos Pos, msg string) *Error {
-	return NewError(pos, Pos{}, msg)
+// ErrorAt makes a new compilation error with the position.
+func ErrorAt(pos Pos, msg string) *Error {
+	return ErrorIn(pos, Pos{}, msg)
 }
 
-// NewErrorf makes a new compilation error with the range and formatted message.
-func NewErrorf(start, end Pos, format string, args ...interface{}) *Error {
-	return NewError(start, end, fmt.Sprintf(format, args...))
+// ErrorfIn makes a new compilation error with the range and formatted message.
+func ErrorfIn(start, end Pos, format string, args ...interface{}) *Error {
+	return ErrorIn(start, end, fmt.Sprintf(format, args...))
 }
 
-// NewErrorfAt makes a new compilation error with the position and formatted message.
-func NewErrorfAt(pos Pos, format string, args ...interface{}) *Error {
-	return NewError(pos, Pos{}, fmt.Sprintf(format, args...))
+// ErrorfAt makes a new compilation error with the position and formatted message.
+func ErrorfAt(pos Pos, format string, args ...interface{}) *Error {
+	return ErrorIn(pos, Pos{}, fmt.Sprintf(format, args...))
 }
 
 // WithRange adds range information to the passed error.
 func WithRange(start, end Pos, err error) *Error {
-	return NewError(start, end, err.Error())
+	return ErrorIn(start, end, err.Error())
 }
 
 // WithPos adds positional information to the passed error.
 func WithPos(pos Pos, err error) *Error {
-	return NewErrorAt(pos, err.Error())
+	return ErrorAt(pos, err.Error())
 }
 
 // Note adds note to the given error. If given error is not loc.Error, it's converted into loc.Error.

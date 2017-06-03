@@ -38,8 +38,8 @@ func TestNewError(t *testing.T) {
 
 	s, e := testMakeRange()
 	errs := []*Error{
-		NewError(s, e, "This is error text"),
-		NewErrorf(s, e, "This %s error %s", "is", "text"),
+		ErrorIn(s, e, "This is error text"),
+		ErrorfIn(s, e, "This %s error %s", "is", "text"),
 	}
 	for _, err := range errs {
 		got := err.Error()
@@ -52,8 +52,8 @@ func TestNewError(t *testing.T) {
 func TestNewErrorAt(t *testing.T) {
 	want := "Error: This is error text (at <dummy>:1:4)"
 	for _, err := range []*Error{
-		NewErrorAt(testMakePos(), "This is error text"),
-		NewErrorfAt(testMakePos(), "This is %s text", "error"),
+		ErrorAt(testMakePos(), "This is error text"),
+		ErrorfAt(testMakePos(), "This is %s text", "error"),
 	} {
 		got := err.Error()
 		if got != want {
@@ -114,7 +114,7 @@ func TestNote(t *testing.T) {
 
 `
 	s, e := testMakeRange()
-	err := Note(NewError(s, e, "This is original error text"), "This is additional error text")
+	err := Note(ErrorIn(s, e, "This is original error text"), "This is additional error text")
 	got := err.Error()
 	if got != want {
 		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
@@ -154,7 +154,7 @@ func TestNoteIn(t *testing.T) {
 
 `
 	s, e = testMakeRange()
-	err := NoteIn(s, e, NewError(s, e, "This is original error text"), "This is additional error text")
+	err := NoteIn(s, e, ErrorIn(s, e, "This is original error text"), "This is additional error text")
 	got := err.Error()
 	if got != want {
 		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
@@ -189,8 +189,8 @@ func TestNoteMethods(t *testing.T) {
 
 	s, e := testMakeRange()
 	errs := []*Error{
-		NewError(s, e, "This is original error text").Note("This is additional error text"),
-		NewError(s, e, "This is original error text").Notef("This is %s", "additional error text"),
+		ErrorIn(s, e, "This is original error text").Note("This is additional error text"),
+		ErrorIn(s, e, "This is original error text").Notef("This is %s", "additional error text"),
 	}
 	for _, err := range errs {
 		got := err.Error()
@@ -214,8 +214,8 @@ func TestNoteMethodsWithPos(t *testing.T) {
 	s, e := testMakeRange()
 
 	errs := []*Error{
-		NewError(s, e, "This is original error text").NoteAt(s, "This is additional error text"),
-		NewError(s, e, "This is original error text").NotefAt(s, "This is %s", "additional error text"),
+		ErrorIn(s, e, "This is original error text").NoteAt(s, "This is additional error text"),
+		ErrorIn(s, e, "This is original error text").NotefAt(s, "This is %s", "additional error text"),
 	}
 	for _, err := range errs {
 		got := err.Error()
@@ -228,7 +228,7 @@ func TestNoteMethodsWithPos(t *testing.T) {
 func TestCodeIsEmpty(t *testing.T) {
 	s := NewDummySource("")
 	p := Pos{0, 1, 1, s}
-	err := NewError(p, p, "This is error text")
+	err := ErrorIn(p, p, "This is error text")
 	want := "Error: This is error text (at <dummy>:1:1)"
 	got := err.Error()
 
