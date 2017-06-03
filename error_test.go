@@ -27,6 +27,21 @@ func testMakePos() Pos {
 }
 
 func TestNewError(t *testing.T) {
+	want := "Error: This is error text"
+
+	errs := []*Error{
+		NewError("This is error text"),
+		Errorf("This %s error %s", "is", "text"),
+	}
+	for _, err := range errs {
+		got := err.Error()
+		if got != want {
+			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+		}
+	}
+}
+
+func TestErrorIn(t *testing.T) {
 	want :=
 		`Error: This is error text (at <dummy>:1:4)
 
@@ -49,7 +64,7 @@ func TestNewError(t *testing.T) {
 	}
 }
 
-func TestNewErrorAt(t *testing.T) {
+func TestErrorAt(t *testing.T) {
 	want := "Error: This is error text (at <dummy>:1:4)"
 	for _, err := range []*Error{
 		ErrorAt(testMakePos(), "This is error text"),

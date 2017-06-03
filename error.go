@@ -104,6 +104,11 @@ func (err *Error) NotefAt(pos Pos, format string, args ...interface{}) *Error {
 	return err.NoteAt(pos, fmt.Sprintf(format, args...))
 }
 
+// NewError makes loc.Error instance without source location information.
+func NewError(msg string) *Error {
+	return &Error{Pos{}, Pos{}, []string{msg}}
+}
+
 // ErrorIn makes a new compilation error with the range.
 func ErrorIn(start, end Pos, msg string) *Error {
 	return &Error{start, end, []string{msg}}
@@ -112,6 +117,11 @@ func ErrorIn(start, end Pos, msg string) *Error {
 // ErrorAt makes a new compilation error with the position.
 func ErrorAt(pos Pos, msg string) *Error {
 	return ErrorIn(pos, Pos{}, msg)
+}
+
+// NewErrorf makes loc.Error instance without source location information following given format.
+func Errorf(format string, args ...interface{}) *Error {
+	return NewError(fmt.Sprintf(format, args...))
 }
 
 // ErrorfIn makes a new compilation error with the range and formatted message.
