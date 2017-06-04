@@ -2,6 +2,7 @@ package loc
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -55,7 +56,18 @@ func main() {
 
 	// Finally you can see the result!
 
+	// Get the error message as string. Note that this is only for non-Windows OS.
 	fmt.Println(err)
+	// Output:
+	// Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
+	//     Note: Defined here at first (at <dummy>:4:1)
+	//     Note: Previously defined as int (at <dummy>:4:1)
+	//
+	// >       foo := true
+
+	// Directly writes the error message into given file.
+	// This supports Windows. Useful to output from stdout or stderr.
+	err.PrintToFile(os.Stdout)
 	// Output:
 	// Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
 	//     Note: Defined here at first (at <dummy>:4:1)

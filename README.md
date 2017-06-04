@@ -18,6 +18,7 @@ type which provides nice look error message.
 - Enable to add notes to error by nesting an error instance like [pkg/errors](https://github.com/pkg/errors)
 - Proper location is automatically added to error messages and notes
 - Colorized label like 'Error:' or 'Note:'
+- Windows is supported
 
 It's important to make a good error when compilation or execution errors found. loc helps it.
 This library is actually used in some my compiler implementation.
@@ -28,6 +29,7 @@ package main
 import (
 	"fmt"
 	"github.com/rhysd/loc"
+	"os"
 )
 
 func main() {
@@ -80,7 +82,13 @@ func main() {
 
 	// Finally you can see the result!
 
-	fmt.Println(err)
+	// Get the error message as string. Note that this is only for non-Windows OS.
+	msg := err.Error()
+	fmt.Println(msg)
+
+	// Directly writes the error message into given file.
+	// This supports Windows. Useful to output from stdout or stderr.
+	err.PrintToFile(os.Stderr)
 }
 ```
 
