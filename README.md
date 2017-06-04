@@ -118,5 +118,5 @@ Please see [documentation][locerr document] to know whole APIs.
 [travis result]: https://travis-ci.org/rhysd/locerr
 [coverage status]: https://codecov.io/gh/rhysd/locerr/branch/master/graph/badge.svg
 [coverage result]: https://codecov.io/gh/rhysd/locerr
-[windows build badge]: https://ci.appveyor.com/api/projects/status/4d3bkiabf088gboi/branch/master?svg=true
+[windows build badge]: https://ci.appveyor.com/api/projects/status/v4ghlgka6e6st2mn/branch/master?svg=true
 [appveyor result]: https://ci.appveyor.com/project/rhysd/locerr/branch/master
