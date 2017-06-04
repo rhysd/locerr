@@ -1,12 +1,12 @@
 /*
-Package loc is a small library to make an error with source code location information.
+Package locerr is a small library to make an error with source code location information.
 It provides a struct to represent a source file, a specific position in
 code and an error related to specific range or position in source.
 
-It's important to make a good error when compilation or execution errors found. loc helps it.
+It's important to make a good error when compilation or execution errors found. locerr helps it.
 This library is actually used in some my compiler implementation.
 
-Repository: https://github.com/rhysd/loc
+Repository: https://github.com/rhysd/locerr
 
 At first you should gain entire source as *Source instance.
 
@@ -19,19 +19,19 @@ At first you should gain entire source as *Source instance.
     	foo := true
     }
     `
-    src := loc.NewDummySource(code)
+    src := locerr.NewDummySource(code)
 
 You can get *Source instance from file (NewSourceFromFile) or stdin (NewSourceFromStdin) also.
 
 Let's say to find an error at some range in the source.
 
-    start := loc.Pos{
+    start := locerr.Pos{
     	Offset: 41,
     	Line:   6,
     	Column: 1,
     	File:   src,
     }
-    end := loc.Pos{
+    end := locerr.Pos{
     	Offset: 54,
     	Line:   6,
     	Column: 12,
@@ -41,12 +41,12 @@ Let's say to find an error at some range in the source.
 ErrorIn or other factory functions make a new error instance with the range. Error instance implements
 error interface so it can be handled like other error types.
 
-    err := loc.ErrorIn(start, end, "Found duplicate symbol 'foo'")
+    err := locerr.ErrorIn(start, end, "Found duplicate symbol 'foo'")
 
 Assume that you find additional information (location of variable and its type). Then you can add some
 notes to the error. Notes can be added by wrapping errors like pkg/errors library.
 
-    prev := loc.Pos{
+    prev := locerr.Pos{
     	Offset: 26,
     	Line:   4,
     	Column: 1,
@@ -87,4 +87,4 @@ of error message
 
 Colorized output can be seen at https://github.com/rhysd/ss/blob/master/loc/output.png?raw=true
 */
-package loc
+package locerr

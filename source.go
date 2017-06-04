@@ -1,4 +1,4 @@
-package loc
+package locerr
 
 import (
 	"io/ioutil"

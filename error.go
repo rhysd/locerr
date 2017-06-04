@@ -1,4 +1,4 @@
-package loc
+package locerr
 
 import (
 	"bytes"
@@ -137,7 +137,7 @@ func (err *Error) NotefAt(pos Pos, format string, args ...interface{}) *Error {
 	return err.NoteAt(pos, fmt.Sprintf(format, args...))
 }
 
-// NewError makes loc.Error instance without source location information.
+// NewError makes locerr.Error instance without source location information.
 func NewError(msg string) *Error {
 	return &Error{Pos{}, Pos{}, []string{msg}}
 }
@@ -152,7 +152,7 @@ func ErrorAt(pos Pos, msg string) *Error {
 	return ErrorIn(pos, Pos{}, msg)
 }
 
-// NewErrorf makes loc.Error instance without source location information following given format.
+// NewErrorf makes locerr.Error instance without source location information following given format.
 func Errorf(format string, args ...interface{}) *Error {
 	return NewError(fmt.Sprintf(format, args...))
 }
@@ -177,7 +177,7 @@ func WithPos(pos Pos, err error) *Error {
 	return ErrorAt(pos, err.Error())
 }
 
-// Note adds note to the given error. If given error is not loc.Error, it's converted into loc.Error.
+// Note adds note to the given error. If given error is not locerr.Error, it's converted into locerr.Error.
 func Note(err error, msg string) *Error {
 	if err, ok := err.(*Error); ok {
 		return err.Note(msg)
@@ -185,7 +185,7 @@ func Note(err error, msg string) *Error {
 	return &Error{Pos{}, Pos{}, []string{err.Error(), msg}}
 }
 
-// NoteIn adds range information and stack additional message to the original error. If given error is not loc.Error, it's converted into loc.Error.
+// NoteIn adds range information and stack additional message to the original error. If given error is not locerr.Error, it's converted into locerr.Error.
 func NoteIn(start, end Pos, err error, msg string) *Error {
 	if err, ok := err.(*Error); ok {
 		return err.NoteAt(start, msg)
@@ -193,22 +193,22 @@ func NoteIn(start, end Pos, err error, msg string) *Error {
 	return &Error{start, end, []string{err.Error(), msg}}
 }
 
-// NoteAt adds positional information and stack additional message to the original error. If given error is not loc.Error, it's converted into loc.Error.
+// NoteAt adds positional information and stack additional message to the original error. If given error is not locerr.Error, it's converted into locerr.Error.
 func NoteAt(pos Pos, err error, msg string) *Error {
 	return NoteIn(pos, Pos{}, err, msg)
 }
 
-// Notef adds note to the given error. Description will be created following given format and arguments. If given error is not loc.Error, it's converted into loc.Error.
+// Notef adds note to the given error. Description will be created following given format and arguments. If given error is not locerr.Error, it's converted into locerr.Error.
 func Notef(err error, format string, args ...interface{}) *Error {
 	return Note(err, fmt.Sprintf(format, args...))
 }
 
-// NotefIn adds range information and stack additional formatted message to the original error. If given error is not loc.Error, it's converted into loc.Error.
+// NotefIn adds range information and stack additional formatted message to the original error. If given error is not locerr.Error, it's converted into locerr.Error.
 func NotefIn(start, end Pos, err error, format string, args ...interface{}) *Error {
 	return NoteIn(start, end, err, fmt.Sprintf(format, args...))
 }
 
-// NotefAt adds positional information and stack additional formatted message to the original error If given error is not loc.Error, it's converted into loc.Error..
+// NotefAt adds positional information and stack additional formatted message to the original error If given error is not locerr.Error, it's converted into locerr.Error.
 func NotefAt(pos Pos, err error, format string, args ...interface{}) *Error {
 	return NoteIn(pos, Pos{}, err, fmt.Sprintf(format, args...))
 }

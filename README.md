@@ -1,10 +1,10 @@
-:x: loc
-=======
+:x: locerr
+==========
 [![Build Status][build badge]][travis result]
 [![Windows Build status][windows build badge]][appveyor result]
 [![Coverage Status][coverage status]][coverage result]
 
-[loc][loc document] is a small library to make a nice-looking error with source location information.
+[locerr][locerr document] is a small library to make a nice-looking error with source location information.
 It provides a struct to represent a source file, a specific position in code and an error related to
 specific range or position in source.
 
@@ -20,15 +20,15 @@ type which provides nice look error message.
 - Colorized label like 'Error:' or 'Note:'
 - Windows is supported
 
-It's important to make a good error when compilation or execution errors found. loc helps it.
-This library is actually used in some my compiler implementation.
+It's important to make a good error when compilation or execution errors found. [locerr][locerr document]
+helps it. This library is actually used in some my compiler implementation.
 
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/rhysd/loc"
+	"github.com/rhysd/locerr"
 	"os"
 )
 
@@ -43,19 +43,19 @@ func main() {
 
 	foo := true
 }`
-	src := loc.NewDummySource(code)
+	src := locerr.NewDummySource(code)
 
 	// You can get *Source instance from file (NewSourceFromFile) or stdin (NewSourceFromStdin) also.
 
 	// Let's say to find an error at some range in the source.
 
-	start := loc.Pos{
+	start := locerr.Pos{
 		Offset: 41,
 		Line:   6,
 		Column: 1,
 		File:   src,
 	}
-	end := loc.Pos{
+	end := locerr.Pos{
 		Offset: 54,
 		Line:   6,
 		Column: 12,
@@ -65,12 +65,12 @@ func main() {
 	// ErrorIn or other factory functions make a new error instance with the range. Error instance implements
 	// error interface so it can be handled like other error types.
 
-	err := loc.ErrorIn(start, end, "Found duplicate symbol 'foo'")
+	err := locerr.ErrorIn(start, end, "Found duplicate symbol 'foo'")
 
 	// Assume that you find additional information (location of variable and its type). Then you can add some
 	// notes to the error. Notes can be added by wrapping errors like pkg/errors library.
 
-	prev := loc.Pos{
+	prev := locerr.Pos{
 		Offset: 26,
 		Line:   4,
 		Column: 1,
@@ -109,14 +109,14 @@ And source code location information (file name, line and column) is added with 
 If the error has range information, the error shows code snippet which caused the error at the end
 of error message
 
-Please see [documentation][loc document] to know whole APIs.
+Please see [documentation][locerr document] to know whole APIs.
 
 Note that on Windows always color is disabled because ANSI color sequence is not availale on CMD.exe.
 
-[loc document]: https://godoc.org/github.com/rhysd/loc
-[build badge]: https://travis-ci.org/rhysd/loc.svg?branch=master
-[travis result]: https://travis-ci.org/rhysd/loc
-[coverage status]: https://codecov.io/gh/rhysd/loc/branch/master/graph/badge.svg
-[coverage result]: https://codecov.io/gh/rhysd/loc
+[locerr document]: https://godoc.org/github.com/rhysd/locerr
+[build badge]: https://travis-ci.org/rhysd/locerr.svg?branch=master
+[travis result]: https://travis-ci.org/rhysd/locerr
+[coverage status]: https://codecov.io/gh/rhysd/locerr/branch/master/graph/badge.svg
+[coverage result]: https://codecov.io/gh/rhysd/locerr
 [windows build badge]: https://ci.appveyor.com/api/projects/status/4d3bkiabf088gboi/branch/master?svg=true
-[appveyor result]: https://ci.appveyor.com/project/rhysd/loc/branch/master
+[appveyor result]: https://ci.appveyor.com/project/rhysd/locerr/branch/master
