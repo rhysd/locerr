@@ -8,7 +8,10 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
+	"github.com/mattn/go-runewidth"
 )
+
+// FIXME: '\r' is not considered
 
 // SetColor controls font should be colorful or not.
 func SetColor(enabled bool) {
@@ -20,6 +23,7 @@ var (
 	red   = color.New(color.FgRed)
 	green = color.New(color.FgGreen)
 	gray  = color.New(color.FgHiBlack)
+	lime  = color.New(color.FgHiGreen)
 )
 
 // Error represents a compilation error with positional information and stacked messages.
@@ -58,13 +62,98 @@ func (err *Error) snippetLines() [][]byte {
 	lines := [][]byte{}
 	prev := 0
 	for i, b := range snip {
-		if b == '\n' {
-			lines = append(lines, snip[prev:i+1])
-			prev = i + 1
+		if b != '\n' {
+			continue
 		}
+		lines = append(lines, snip[prev:i])
+		prev = i + 1
 	}
 	lines = append(lines, snip[prev:])
 	return lines
+}
+
+func underline(line []byte, lineLen int) []byte {
+	if len(line) > lineLen {
+		line = line[:lineLen]
+	}
+
+	buf := make([]byte, 0, lineLen)
+
+	// Skip underline for indentation
+	start := 0
+	for start < lineLen {
+		r := line[start]
+		if r != ' ' && r != '\t' {
+			break
+		}
+		buf = append(buf, r)
+		start++
+	}
+
+	if start > 0 {
+		line = line[start:]
+	}
+
+	// After indentation, draw underline
+	for _, r := range string(line) {
+		if r == '\t' {
+			// XXX: Cannot get the length of \t
+			buf = append(buf, '\t')
+			continue
+		}
+		w := runewidth.RuneWidth(r)
+		for i := 0; i < w; i++ {
+			buf = append(buf, '~')
+		}
+	}
+
+	return buf
+}
+
+func setMergin(from string, buf []byte) []byte {
+	for _, r := range from {
+		if r == '\t' {
+			buf = append(buf, '\t')
+			continue
+		}
+		w := runewidth.RuneWidth(r)
+		for i := 0; i < w; i++ {
+			buf = append(buf, ' ')
+		}
+	}
+	return buf
+}
+
+func (err *Error) underlineForLine(line []byte, linum int) []byte {
+	startLine := err.Start.Line
+	endLine := err.End.Line
+	if startLine < linum && linum < endLine {
+		return underline(line, len(line))
+	}
+
+	start := 0
+	end := len(line)
+	if startLine == linum {
+		start = err.Start.Column - 1
+	}
+	if linum == endLine {
+		end = err.End.Column
+	}
+
+	len := end - start
+	if start == 0 {
+		return underline(line, len)
+	}
+
+	buf := make([]byte, 0, start+len)
+	buf = setMergin(string(line[:start]), buf)
+
+	// Draw underline after mergin
+	for i := 0; i < len; i++ {
+		buf = append(buf, '~')
+	}
+
+	return buf
 }
 
 func (err *Error) WriteMessage(w io.Writer) {
@@ -89,12 +178,14 @@ func (err *Error) WriteMessage(w io.Writer) {
 		return
 	}
 
-	fmt.Fprint(w, "\n\n")
-	for _, line := range lines {
-		fmt.Fprint(w, "> ")
+	fmt.Fprint(w, "\n")
+	for i, line := range lines {
+		fmt.Fprint(w, "\n> ")
 		w.Write(line)
+		fmt.Fprint(w, "\n> ")
+		lime.Fprint(w, string(err.underlineForLine(line, s.Line+i)))
 	}
-	fmt.Fprint(w, "\n\n")
+	fmt.Fprint(w, "\n")
 
 	// TODO:
 	// If the code snippet for the token is too long, skip lines with '...' except for starting N lines
