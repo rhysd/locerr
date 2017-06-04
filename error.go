@@ -4,36 +4,22 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/fatih/color"
-	"runtime"
-	"strings"
+	"github.com/mattn/go-colorable"
+	"io"
+	"os"
 )
-
-func init() {
-	// FIXME:
-	// On Windows, ANSI sequences are not available on cmd.exe.
-	// go-colorable cannot help to solve this because it only provides writers to stdout or
-	// stderr.
-	// At least I need to improve the check. Even if running on windows, WLS would be able to
-	// handle ANSI sequences.
-	if runtime.GOOS == "windows" {
-		color.NoColor = true
-	}
-}
 
 // SetColor controls font should be colorful or not.
 func SetColor(enabled bool) {
-	color.NoColor = !enabled || runtime.GOOS == "windows"
+	color.NoColor = !enabled
 }
 
 var (
-	bold = color.New(color.Bold).SprintFunc()
+	bold  = color.New(color.Bold)
+	red   = color.New(color.FgRed)
+	green = color.New(color.FgGreen)
+	gray  = color.New(color.FgHiBlack)
 )
-
-// stringWriter is an interface to use WriteString method for both *bytes.Buffer and *os.File.
-// err.Error uses Buffer to build a string and err.Fprint
-type stringWriter interface {
-	WriteString(s string) (n int, err error)
-}
 
 // Error represents a compilation error with positional information and stacked messages.
 type Error struct {
@@ -42,7 +28,7 @@ type Error struct {
 	Messages []string
 }
 
-func (err *Error) snippetLines() []string {
+func (err *Error) snippetLines() [][]byte {
 	if err.End.File == nil {
 		return nil
 	}
@@ -67,24 +53,34 @@ func (err *Error) snippetLines() []string {
 		end++
 	}
 
-	return strings.Split(string(code[start:end]), "\n")
+	snip := code[start:end]
+	lines := [][]byte{}
+	prev := 0
+	for i, b := range snip {
+		if b == '\n' {
+			lines = append(lines, snip[prev:i+1])
+			prev = i + 1
+		}
+	}
+	lines = append(lines, snip[prev:])
+	return lines
 }
 
-func (err *Error) WriteMessage(w stringWriter) {
+func (err *Error) WriteMessage(w io.Writer) {
 	s := err.Start
 
 	// Error: {msg} (at {pos})
 	//   {note1}
 	//   {note2}
 	//   ...
-	w.WriteString(color.RedString("Error: "))
-	w.WriteString(bold(err.Messages[0]))
+	red.Fprint(w, "Error: ")
+	bold.Fprint(w, err.Messages[0])
 	if s.File != nil {
-		w.WriteString(color.HiBlackString(" (at %s)", s.String()))
+		gray.Fprintf(w, " (at %s)", s.String())
 	}
 	for _, msg := range err.Messages[1:] {
-		w.WriteString(color.GreenString("\n  Note: "))
-		w.WriteString(msg)
+		green.Fprint(w, "\n  Note: ")
+		fmt.Fprint(w, msg)
 	}
 
 	lines := err.snippetLines()
@@ -92,13 +88,12 @@ func (err *Error) WriteMessage(w stringWriter) {
 		return
 	}
 
-	w.WriteString("\n\n")
+	fmt.Fprint(w, "\n\n")
 	for _, line := range lines {
-		w.WriteString("> ")
-		w.WriteString(line)
-		w.WriteString("\n")
+		fmt.Fprint(w, "> ")
+		w.Write(line)
 	}
-	w.WriteString("\n")
+	fmt.Fprint(w, "\n\n")
 
 	// TODO:
 	// If the code snippet for the token is too long, skip lines with '...' except for starting N lines
@@ -110,6 +105,12 @@ func (err *Error) Error() string {
 	var buf bytes.Buffer
 	err.WriteMessage(&buf)
 	return buf.String()
+}
+
+// PrintToFile prints error message to the given file. This is useful on Windows because Error()
+// does not support colorful string on Windows.
+func (err *Error) PrintToFile(f *os.File) {
+	err.WriteMessage(colorable.NewColorable(f))
 }
 
 // Note stacks the additional message upon current error.

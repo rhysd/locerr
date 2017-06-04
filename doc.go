@@ -56,9 +56,22 @@ notes to the error. Notes can be added by wrapping errors like pkg/errors librar
     err = err.NoteAt(prev, "Defined here at first")
     err = err.NoteAt(prev, "Previously defined as int")
 
-Finally you can see the result!
+Finally you can see the result! err.Error() gets the error message as string. Note that this is only for
+non-Windows OS.
 
     fmt.Println(err)
+    // Output:
+    // Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
+    //   Note: Defined here at first (at <dummy>:4:1)
+    //   Note: Previously defined as int (at <dummy>:4:1)
+    //
+    // >       foo := true
+    //
+
+To support Windows, please use PrintToFile() method. It directly writes the error message into given file.
+This supports Windows and is useful to output from stdout or stderr.
+
+    err.PrintToFile(os.Stderr)
     // Output:
     // Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
     //   Note: Defined here at first (at <dummy>:4:1)
