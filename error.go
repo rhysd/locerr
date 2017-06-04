@@ -3,10 +3,11 @@ package locerr
 import (
 	"bytes"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/mattn/go-colorable"
 	"io"
 	"os"
+
+	"github.com/fatih/color"
+	"github.com/mattn/go-colorable"
 )
 
 // SetColor controls font should be colorful or not.

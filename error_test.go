@@ -2,8 +2,9 @@ package locerr
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"testing"
+
+	"github.com/fatih/color"
 )
 
 func testMakeRange() (Pos, Pos) {
