@@ -29,6 +29,12 @@ var (
 	bold = color.New(color.Bold).SprintFunc()
 )
 
+// stringWriter is an interface to use WriteString method for both *bytes.Buffer and *os.File.
+// err.Error uses Buffer to build a string and err.Fprint
+type stringWriter interface {
+	WriteString(s string) (n int, err error)
+}
+
 // Error represents a compilation error with positional information and stacked messages.
 type Error struct {
 	Start    Pos
@@ -36,43 +42,73 @@ type Error struct {
 	Messages []string
 }
 
-func (err *Error) Error() string {
-	var buf bytes.Buffer
+func (err *Error) snippetLines() []string {
+	if err.End.File == nil {
+		return nil
+	}
+
+	code := err.Start.File.Code
+	start, end := err.Start.Offset, err.End.Offset
+	if start >= end {
+		return nil
+	}
+
+	// Fix first line and last line. Code snippet should be line-wise.
+	for start-1 >= 0 {
+		if code[start-1] == '\n' {
+			break
+		}
+		start--
+	}
+	for end < len(code) {
+		if code[end] == '\n' {
+			break
+		}
+		end++
+	}
+
+	return strings.Split(string(code[start:end]), "\n")
+}
+
+func (err *Error) WriteMessage(w stringWriter) {
 	s := err.Start
 
 	// Error: {msg} (at {pos})
 	//   {note1}
 	//   {note2}
 	//   ...
-	buf.WriteString(color.RedString("Error: "))
-	buf.WriteString(bold(err.Messages[0]))
+	w.WriteString(color.RedString("Error: "))
+	w.WriteString(bold(err.Messages[0]))
 	if s.File != nil {
-		buf.WriteString(color.HiBlackString(" (at %s)", s.String()))
+		w.WriteString(color.HiBlackString(" (at %s)", s.String()))
 	}
 	for _, msg := range err.Messages[1:] {
-		buf.WriteString(color.GreenString("\n  Note: "))
-		buf.WriteString(msg)
+		w.WriteString(color.GreenString("\n  Note: "))
+		w.WriteString(msg)
 	}
 
-	if err.End.File == nil {
-		return buf.String()
+	lines := err.snippetLines()
+	if len(lines) == 0 {
+		return
 	}
 
-	snip := string(s.File.Code[s.Offset:err.End.Offset])
-	if snip == "" {
-		return buf.String()
+	w.WriteString("\n\n")
+	for _, line := range lines {
+		w.WriteString("> ")
+		w.WriteString(line)
+		w.WriteString("\n")
 	}
-
-	// TODO:
-	// Compensate for indentation at the first line of code snippet.
-	buf.WriteString("\n\n> ")
-	buf.WriteString(strings.Replace(snip, "\n", "\n> ", -1))
-	buf.WriteString("\n\n")
+	w.WriteString("\n")
 
 	// TODO:
 	// If the code snippet for the token is too long, skip lines with '...' except for starting N lines
 	// and ending N lines
+}
 
+// Error builds error message for the error.
+func (err *Error) Error() string {
+	var buf bytes.Buffer
+	err.WriteMessage(&buf)
 	return buf.String()
 }
 
