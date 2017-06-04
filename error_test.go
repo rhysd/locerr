@@ -7,8 +7,8 @@ import (
 	"github.com/fatih/color"
 )
 
-func testMakeRange() (Pos, Pos) {
-	s := NewDummySource(
+func TestErrorAndNote(t *testing.T) {
+	src := NewDummySource(
 		`int main() {
     foo(aaa,
         bbb,
@@ -17,227 +17,157 @@ func testMakeRange() (Pos, Pos) {
 }`,
 	)
 
-	start := Pos{21, 2, 9, s}
-	end := Pos{50, 4, 11, s}
-	return start, end
-}
+	s := Pos{21, 2, 9, src}
+	e := Pos{50, 4, 11, src}
 
-func testMakePos() Pos {
-	p, _ := testMakeRange()
-	return p
-}
-
-func TestNewError(t *testing.T) {
-	want := "Error: This is error text"
-
-	errs := []*Error{
-		NewError("This is error text"),
-		Errorf("This %s error %s", "is", "text"),
-	}
-	for _, err := range errs {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
-	}
-}
-
-func TestErrorIn(t *testing.T) {
-	want :=
-		`Error: This is error text (at <dummy>:2:9)
+	snip := `
 
 >     foo(aaa,
 >         bbb,
 >         ccc);
 
 `
+	loc := " (at <dummy>:2:9)"
 
-	s, e := testMakeRange()
-	errs := []*Error{
-		ErrorIn(s, e, "This is error text"),
-		ErrorfIn(s, e, "This %s error %s", "is", "text"),
+	cases := []struct {
+		what string
+		err  *Error
+		want string
+	}{
+		{
+			what: "NewError",
+			err:  NewError("This is error text"),
+			want: "Error: This is error text",
+		},
+		{
+			what: "Errorf",
+			err:  Errorf("This is error text: %d", 42),
+			want: "Error: This is error text: 42",
+		},
+		{
+			what: "ErrorIn",
+			err:  ErrorIn(s, e, "This is error text"),
+			want: "Error: This is error text" + loc + snip,
+		},
+		{
+			what: "ErrorfIn",
+			err:  ErrorfIn(s, e, "This is error text: %d", 42),
+			want: "Error: This is error text: 42" + loc + snip,
+		},
+		{
+			what: "ErrorAt",
+			err:  ErrorAt(s, "This is error text"),
+			want: "Error: This is error text" + loc,
+		},
+		{
+			what: "ErrorfAt",
+			err:  ErrorfAt(s, "This is error text: %d", 42),
+			want: "Error: This is error text: 42" + loc,
+		},
+		{
+			what: "WithRange",
+			err:  WithRange(s, e, fmt.Errorf("This is error text")),
+			want: "Error: This is error text" + loc + snip,
+		},
+		{
+			what: "WithPos",
+			err:  WithPos(s, fmt.Errorf("This is error text")),
+			want: "Error: This is error text" + loc,
+		},
+		{
+			what: "Note to error",
+			err:  Note(fmt.Errorf("This is error text"), "This is note"),
+			want: "Error: This is error text\n  Note: This is note",
+		},
+		{
+			what: "Notef to error",
+			err:  Notef(fmt.Errorf("This is error text"), "This is note: %d", 42),
+			want: "Error: This is error text\n  Note: This is note: 42",
+		},
+		{
+			what: "Note to locerr.Error",
+			err:  Note(ErrorIn(s, e, "This is error text"), "This is note"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note" + snip,
+		},
+		{
+			what: "Notef to locerr.Error",
+			err:  Notef(ErrorIn(s, e, "This is error text"), "This is note: %d", 42),
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42" + snip,
+		},
+		{
+			what: "NoteIn to error",
+			err:  NoteIn(s, e, fmt.Errorf("This is error text"), "This is note"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note" + snip,
+		},
+		{
+			what: "NotefIn to error",
+			err:  NotefIn(s, e, fmt.Errorf("This is error text"), "This is note: %d", 42),
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42" + snip,
+		},
+		{
+			what: "NoteIn to locerr.Error",
+			err:  NoteIn(s, e, ErrorIn(s, e, "This is error text"), "This is note"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note" + loc + snip,
+		},
+		{
+			what: "NotefIn to locerr.Error",
+			err:  NotefIn(s, e, ErrorIn(s, e, "This is error text"), "This is note: %d", 42),
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42" + loc + snip,
+		},
+		{
+			what: "NoteAt to error",
+			err:  NoteAt(s, fmt.Errorf("This is error text"), "This is note"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note",
+		},
+		{
+			what: "NotefAt to error",
+			err:  NotefAt(s, fmt.Errorf("This is error text"), "This is note: %d", 42),
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42",
+		},
+		{
+			what: "NoteAt to locerr.Error",
+			err:  NoteAt(s, ErrorIn(s, e, "This is error text"), "This is note"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note" + loc + snip,
+		},
+		{
+			what: "NotefAt to locerr.Error",
+			err:  NotefAt(s, ErrorIn(s, e, "This is error text"), "This is note: %d", 42),
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42" + loc + snip,
+		},
+		{
+			what: "Note method",
+			err:  ErrorIn(s, e, "This is error text").Note("This is note"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note" + snip,
+		},
+		{
+			what: "Notef method",
+			err:  ErrorIn(s, e, "This is error text").Notef("This is note: %d", 42),
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42" + snip,
+		},
+		{
+			what: "NoteAt method",
+			err:  ErrorIn(s, e, "This is error text").NoteAt(s, "This is note"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note" + loc + snip,
+		},
+		{
+			what: "NotefAt method",
+			err:  ErrorIn(s, e, "This is error text").NotefAt(s, "This is note: %d", 42),
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42" + loc + snip,
+		},
+		{
+			what: "nested notes",
+			err:  Note(ErrorIn(s, e, "This is error text"), "This is note").NoteAt(s, "This is note second"),
+			want: "Error: This is error text" + loc + "\n  Note: This is note\n  Note: This is note second" + loc + snip,
+		},
 	}
-	for _, err := range errs {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
-	}
-}
 
-func TestErrorAt(t *testing.T) {
-	want := "Error: This is error text (at <dummy>:2:9)"
-	for _, err := range []*Error{
-		ErrorAt(testMakePos(), "This is error text"),
-		ErrorfAt(testMakePos(), "This is %s text", "error"),
-	} {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
-	}
-}
-
-func TestWithRange(t *testing.T) {
-	want :=
-		`Error: This is an error text (at <dummy>:2:9)
-
->     foo(aaa,
->         bbb,
->         ccc);
-
-`
-
-	s, e := testMakeRange()
-	err := WithRange(s, e, fmt.Errorf("This is an error text"))
-	got := err.Error()
-	if got != want {
-		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-	}
-}
-
-func TestWithPos(t *testing.T) {
-	want := "Error: This is wrapped error text (at <dummy>:2:9)"
-	got := WithPos(testMakePos(), fmt.Errorf("This is wrapped error text")).Error()
-	if got != want {
-		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-	}
-}
-
-func TestNote(t *testing.T) {
-	want :=
-		`Error: This is original error text
-  Note: This is additional error text`
-
-	errs := []*Error{
-		Note(fmt.Errorf("This is original error text"), "This is additional error text"),
-		Notef(fmt.Errorf("This is original error text"), "This is %s error text", "additional"),
-	}
-	for _, err := range errs {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
-	}
-
-	want =
-		`Error: This is original error text (at <dummy>:2:9)
-  Note: This is additional error text
-
->     foo(aaa,
->         bbb,
->         ccc);
-
-`
-	s, e := testMakeRange()
-	err := Note(ErrorIn(s, e, "This is original error text"), "This is additional error text")
-	got := err.Error()
-	if got != want {
-		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-	}
-}
-
-func TestNoteIn(t *testing.T) {
-	want :=
-		`Error: This is original error text (at <dummy>:2:9)
-  Note: This is additional error text
-
->     foo(aaa,
->         bbb,
->         ccc);
-
-`
-
-	s, e := testMakeRange()
-	errs := []*Error{
-		NoteIn(s, e, fmt.Errorf("This is original error text"), "This is additional error text"),
-		NotefIn(s, e, fmt.Errorf("This is original error text"), "This is %s error text", "additional"),
-	}
-	for _, err := range errs {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
-	}
-
-	want =
-		`Error: This is original error text (at <dummy>:2:9)
-  Note: This is additional error text (at <dummy>:2:9)
-
->     foo(aaa,
->         bbb,
->         ccc);
-
-`
-	s, e = testMakeRange()
-	err := NoteIn(s, e, ErrorIn(s, e, "This is original error text"), "This is additional error text")
-	got := err.Error()
-	if got != want {
-		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-	}
-}
-
-func TestNoteAt(t *testing.T) {
-	want := "Error: This is original error text (at <dummy>:2:9)\n  Note: This is additional error text"
-	pos := testMakePos()
-	original := fmt.Errorf("This is original error text")
-	for _, err := range []*Error{
-		NoteAt(pos, original, "This is additional error text"),
-		NotefAt(pos, original, "This is additional %s", "error text"),
-	} {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
-	}
-}
-
-func TestNoteMethods(t *testing.T) {
-	want :=
-		`Error: This is original error text (at <dummy>:2:9)
-  Note: This is additional error text
-
->     foo(aaa,
->         bbb,
->         ccc);
-
-`
-
-	s, e := testMakeRange()
-	errs := []*Error{
-		ErrorIn(s, e, "This is original error text").Note("This is additional error text"),
-		ErrorIn(s, e, "This is original error text").Notef("This is %s", "additional error text"),
-	}
-	for _, err := range errs {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
-	}
-}
-
-func TestNoteMethodsWithPos(t *testing.T) {
-	want :=
-		`Error: This is original error text (at <dummy>:2:9)
-  Note: This is additional error text (at <dummy>:2:9)
-
->     foo(aaa,
->         bbb,
->         ccc);
-
-`
-
-	s, e := testMakeRange()
-
-	errs := []*Error{
-		ErrorIn(s, e, "This is original error text").NoteAt(s, "This is additional error text"),
-		ErrorIn(s, e, "This is original error text").NotefAt(s, "This is %s", "additional error text"),
-	}
-	for _, err := range errs {
-		got := err.Error()
-		if got != want {
-			t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
-		}
+	for _, tc := range cases {
+		t.Run(tc.what, func(t *testing.T) {
+			have := tc.err.Error()
+			if have != tc.want {
+				t.Fatalf("Unexpected error message.\nwant:\n\n'%s'\nhave:\n\n'%s'", tc.want, have)
+			}
+		})
 	}
 }
 
