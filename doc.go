@@ -32,7 +32,7 @@ Let's say to find an error at some range in the source.
     	File:   src,
     }
     end := locerr.Pos{
-    	Offset: 54,
+    	Offset: 52,
     	Line:   6,
     	Column: 12,
     	File:   src,

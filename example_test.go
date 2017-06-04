@@ -30,7 +30,7 @@ func main() {
 		File:   src,
 	}
 	end := Pos{
-		Offset: 54,
+		Offset: 52,
 		Line:   6,
 		Column: 12,
 		File:   src,
@@ -64,6 +64,7 @@ func main() {
 	//     Note: Previously defined as int (at <dummy>:4:1)
 	//
 	// >       foo := true
+	//
 
 	// Directly writes the error message into given file.
 	// This supports Windows. Useful to output from stdout or stderr.
@@ -74,4 +75,5 @@ func main() {
 	//     Note: Previously defined as int (at <dummy>:4:1)
 	//
 	// >       foo := true
+	//
 }

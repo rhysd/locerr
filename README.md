@@ -57,7 +57,7 @@ func main() {
 		File:   src,
 	}
 	end := locerr.Pos{
-		Offset: 54,
+		Offset: 52,
 		Line:   6,
 		Column: 12,
 		File:   src,
