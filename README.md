@@ -4,15 +4,15 @@
 [![Windows Build status][windows build badge]][appveyor result]
 [![Coverage Status][coverage status]][coverage result]
 
-[locerr][locerr document] is a small library to make a nice-looking error with source location information.
+[locerr][locerr document] is a small library to make a nice-looking locational error in a source code.
 It provides a struct to represent a source file, a specific position in code and an error related to
 specific range or position in source.
 
-This library is useful to provide a unified look for error messages of compilers, interpreters or
-translators.
+This library is useful to provide a unified look for error messages raised by compilers, interpreters
+or translators.
 
-By using `Source` and `Position` types as position information, this library provides an error
-type which provides nice look error message.
+By using `locerr.Source` and `locerr.Position` types as position information, this library can provide
+an error type which shows nice look error message.
 
 - It shows the code snippet which caused an error
 - Enable to add notes to error by nesting an error instance like [pkg/errors](https://github.com/pkg/errors)
@@ -33,7 +33,7 @@ import (
 )
 
 func main() {
-	// At first you should gain entire source as *Source instance.
+	// At first you should gain entire source as *locerr.Source instance.
 
 	code :=
 		`package main
@@ -45,7 +45,8 @@ func main() {
 }`
 	src := locerr.NewDummySource(code)
 
-	// You can get *Source instance from file (NewSourceFromFile) or stdin (NewSourceFromStdin) also.
+	// You can get *locerr.Source instance from file (locerr.NewSourceFromFile)
+	// or stdin (locerr.NewSourceFromStdin) also.
 
 	// Let's say to find an error at some range in the source.
 
@@ -100,6 +101,7 @@ Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
     Note: Previously defined as int (at <dummy>:4:1)
 
 >       foo := true
+
 ```
 
 <img src="https://github.com/rhysd/ss/blob/master/loc/output.png?raw=true" width="371" alt="output screenshot"/>
@@ -110,8 +112,6 @@ If the error has range information, the error shows code snippet which caused th
 of error message
 
 Please see [documentation][locerr document] to know whole APIs.
-
-Note that on Windows always color is disabled because ANSI color sequence is not availale on CMD.exe.
 
 [locerr document]: https://godoc.org/github.com/rhysd/locerr
 [build badge]: https://travis-ci.org/rhysd/locerr.svg?branch=master
