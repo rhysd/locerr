@@ -2,12 +2,13 @@ package locerr
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/fatih/color"
 )
 
-func TestErrorAndNote(t *testing.T) {
+func TestFunctionsAndMethods(t *testing.T) {
 	src := NewDummySource(
 		`int main() {
     foo(aaa,
@@ -25,7 +26,6 @@ func TestErrorAndNote(t *testing.T) {
 >     foo(aaa,
 >         bbb,
 >         ccc);
-
 `
 	loc := " (at <dummy>:2:9)"
 
@@ -171,11 +171,93 @@ func TestErrorAndNote(t *testing.T) {
 	}
 }
 
+func TestCodeSnippet(t *testing.T) {
+	cases := []struct {
+		what string
+		code string
+		from int
+		to   int
+		want []string
+	}{
+		{
+			what: "whole in a line",
+			code: "abc",
+			from: 0,
+			to:   2,
+			want: []string{
+				"> abc",
+			},
+		},
+		{
+			what: "slice in a line",
+			code: "abc",
+			from: 1,
+			to:   2,
+			want: []string{
+				"> abc",
+			},
+		},
+		{
+			what: "slice in a line with indent",
+			code: "	 abc",
+			from: 3,
+			to:   4,
+			want: []string{
+				"> 	 abc",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.what, func(t *testing.T) {
+			src := NewDummySource(tc.code)
+			calcPos := func(offset int) Pos {
+				code := src.Code
+				o, l, c, end := 0, 1, 1, len(code)
+				for o != end {
+					if o == offset {
+						return Pos{o, l, c, src}
+					}
+					if code[o] == '\n' {
+						l++
+						c = 1
+					} else {
+						c++
+					}
+					o++
+				}
+				if o != offset {
+					t.Fatal("Offsetis illegal")
+				}
+				return Pos{o, l, c, src}
+			}
+			err := ErrorIn(calcPos(tc.from), calcPos(tc.to), "text")
+			have := strings.SplitN(err.Error(), "\n", 3)[2]
+			want := strings.Join(tc.want, "\n") + "\n"
+			if have != want {
+				t.Fatalf("Unexpected snippet\n\nwant:\n'%s'\nhave:\n'%s'", want, have)
+			}
+		})
+	}
+}
+
 func TestCodeIsEmpty(t *testing.T) {
 	s := NewDummySource("")
 	p := Pos{0, 1, 1, s}
 	err := ErrorIn(p, p, "This is error text")
 	want := "Error: This is error text (at <dummy>:1:1)"
+	got := err.Error()
+
+	if want != got {
+		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+	}
+}
+
+func TestSnipIsEmpty(t *testing.T) {
+	s := NewDummySource("abc")
+	p := Pos{1, 1, 2, s}
+	err := ErrorIn(p, p, "This is error text")
+	want := "Error: This is error text (at <dummy>:1:2)"
 	got := err.Error()
 
 	if want != got {

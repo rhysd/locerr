@@ -50,16 +50,11 @@ func writeSnipLine(w io.Writer, line string) {
 }
 
 func (err *Error) writeSnip(w io.Writer) {
-	code := err.Start.File.Code
-	lines := strings.Split(string(code[err.Start.Offset:err.End.Offset]), "\n")
-	if len(lines) == 0 {
-		return
-	}
-
 	fmt.Fprint(w, "\n\n> ")
 
+	code := err.Start.File.Code
 	start := err.Start.Offset
-	for start-1 > 0 {
+	for start-1 >= 0 {
 		if code[start-1] == '\n' {
 			break
 		}
@@ -69,6 +64,8 @@ func (err *Error) writeSnip(w io.Writer) {
 		// Write code before snip in first line
 		w.Write(code[start:err.Start.Offset])
 	}
+
+	lines := strings.Split(string(code[err.Start.Offset:err.End.Offset]), "\n")
 
 	// First line does not have "> " prefix
 	writeSnipLine(w, lines[0])
@@ -90,7 +87,7 @@ func (err *Error) writeSnip(w io.Writer) {
 		fmt.Fprint(w, string(code[err.End.Offset:end]))
 	}
 
-	fmt.Fprint(w, "\n\n")
+	fmt.Fprint(w, "\n")
 
 	// TODO:
 	// If the code snippet for the token is too long, skip lines with '...' except for starting N lines
