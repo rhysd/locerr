@@ -3,6 +3,7 @@
 [![Build Status][build badge]][travis result]
 [![Windows Build status][windows build badge]][appveyor result]
 [![Coverage Status][coverage status]][coverage result]
+[![GoDoc][godoc badge]][locerr document]
 
 [locerr][locerr document] is a small library to make a nice-looking locational error in a source code.
 It provides a struct to represent a source file, a specific position in code and an error related to
@@ -53,7 +54,7 @@ func main() {
 	start := locerr.Pos{
 		Offset: 41,
 		Line:   6,
-		Column: 1,
+		Column: 2,
 		File:   src,
 	}
 	end := locerr.Pos{
@@ -111,8 +112,6 @@ And source code location information (file name, line and column) is added with 
 If the error has range information, the error shows code snippet which caused the error at the end
 of error message
 
-Please see [documentation][locerr document] to know whole APIs.
-
 [locerr document]: https://godoc.org/github.com/rhysd/locerr
 [build badge]: https://travis-ci.org/rhysd/locerr.svg?branch=master
 [travis result]: https://travis-ci.org/rhysd/locerr
@@ -120,3 +119,4 @@ Please see [documentation][locerr document] to know whole APIs.
 [coverage result]: https://codecov.io/gh/rhysd/locerr
 [windows build badge]: https://ci.appveyor.com/api/projects/status/v4ghlgka6e6st2mn/branch/master?svg=true
 [appveyor result]: https://ci.appveyor.com/project/rhysd/locerr/branch/master
+[godoc badge]: https://godoc.org/github.com/rhysd/locerr?status.svg
