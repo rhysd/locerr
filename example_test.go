@@ -81,4 +81,15 @@ function main() {
 	// >   foo(true,
 	// >       42,
 	// >       "test")
+
+	// If you have only one position information rather than two, 'start' position and 'end' position,
+	// ErrorAt() is available instead of ErrorIn() ErrorAt() takes one Pos instance.
+	err = ErrorAt(start, "Calling 'foo' with wrong number of argument")
+
+	// In this case, line snippet is shown in error message. `pos.Line` is used to get line from source text.
+	fmt.Println(err)
+	// Output:
+	// Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
+	//
+	// >   foo(true,
 }
