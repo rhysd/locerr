@@ -84,7 +84,7 @@ func (err *Error) writeSnip(w io.Writer) {
 	}
 	if err.End.Offset < end {
 		// Write code after snip in last line
-		fmt.Fprint(w, string(code[err.End.Offset:end]))
+		w.Write(code[err.End.Offset:end])
 	}
 
 	fmt.Fprint(w, "\n")

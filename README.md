@@ -24,6 +24,14 @@ an error type which shows nice look error message.
 It's important to make a good error when compilation or execution errors found. [locerr][locerr document]
 helps it. This library is actually used in some my compiler implementation.
 
+To install, please use `go get`.
+
+```console
+$ go get -u github.com/rhysd/locerr
+```
+
+Following is an example code.
+
 ```go
 package main
 
