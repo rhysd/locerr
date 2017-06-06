@@ -24,13 +24,32 @@ an error type which shows nice look error message.
 It's important to make a good error when compilation or execution errors found. [locerr][locerr document]
 helps it. This library is actually used in some my compiler implementation.
 
-To install, please use `go get`.
+## Installation
+
+Please use `go get`.
 
 ```console
 $ go get -u github.com/rhysd/locerr
 ```
 
-Following is an example code.
+## Usage
+
+As example, let's say to make a locational error for following pseudo code. In this code, function
+`foo` is defined with 1 parameter but called with 3 parameters.
+
+```
+function foo(x: bool): int {
+  return (if x then 42 else 21)
+}
+
+function main() {
+  foo(true,
+      42,
+      "test")
+}
+```
+
+We can make a locational error with some notes using locerr as following.
 
 ```go
 package main
@@ -124,6 +143,30 @@ And source code location information (file name, line and column) is added with 
 If the error has range information, the error shows code snippet which caused the error at the end
 of error message
 
+## Development
+
+### How to run tests
+
+```console
+$ go test ./
+```
+
+Note that `go test -v` may fail because color sequences are not assumed in tests.
+
+### How to run fuzzing test
+
+Fuzzing test using [go-fuzz][].
+
+```console
+$ cd ./fuzz
+$ go-fuzz-build github.com/rhysd/locerr/fuzz
+$ go-fuzz -bin=./locerr_fuzz-fuzz.zip -workdir=fuzz
+```
+
+Last command starts fuzzing tests until stopped with `^C`. Every 3 seconds it reports the current
+result. It makes 3 directories in `fuzz` directory as the result, `corpus`, `crashers` and
+`suppressions`. `crashers` contains the information about the crash caused by fuzzing.
+
 [locerr document]: https://godoc.org/github.com/rhysd/locerr
 [build badge]: https://travis-ci.org/rhysd/locerr.svg?branch=master
 [travis result]: https://travis-ci.org/rhysd/locerr
@@ -132,3 +175,4 @@ of error message
 [windows build badge]: https://ci.appveyor.com/api/projects/status/v4ghlgka6e6st2mn/branch/master?svg=true
 [appveyor result]: https://ci.appveyor.com/project/rhysd/locerr/branch/master
 [godoc badge]: https://godoc.org/github.com/rhysd/locerr?status.svg
+[go-fuzz]: https://github.com/dvyukov/go-fuzz
