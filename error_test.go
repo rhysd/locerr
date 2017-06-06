@@ -8,6 +8,27 @@ import (
 	"github.com/fatih/color"
 )
 
+func testCalcPos(src *Source, offset int) Pos {
+	code := src.Code
+	o, l, c, end := 0, 1, 1, len(code)
+	for o != end {
+		if o == offset {
+			return Pos{o, l, c, src}
+		}
+		if code[o] == '\n' {
+			l++
+			c = 1
+		} else {
+			c++
+		}
+		o++
+	}
+	if o != offset {
+		panic("Offsetis illegal")
+	}
+	return Pos{o, l, c, src}
+}
+
 func TestFunctionsAndMethods(t *testing.T) {
 	src := NewDummySource(
 		`int main() {
@@ -26,6 +47,10 @@ func TestFunctionsAndMethods(t *testing.T) {
 >     foo(aaa,
 >         bbb,
 >         ccc);
+`
+	oneline := `
+
+>     foo(aaa,
 `
 	loc := " (at <dummy>:2:9)"
 
@@ -57,12 +82,12 @@ func TestFunctionsAndMethods(t *testing.T) {
 		{
 			what: "ErrorAt",
 			err:  ErrorAt(s, "This is error text"),
-			want: "Error: This is error text" + loc,
+			want: "Error: This is error text" + loc + oneline,
 		},
 		{
 			what: "ErrorfAt",
 			err:  ErrorfAt(s, "This is error text: %d", 42),
-			want: "Error: This is error text: 42" + loc,
+			want: "Error: This is error text: 42" + loc + oneline,
 		},
 		{
 			what: "WithRange",
@@ -72,7 +97,7 @@ func TestFunctionsAndMethods(t *testing.T) {
 		{
 			what: "WithPos",
 			err:  WithPos(s, fmt.Errorf("This is error text")),
-			want: "Error: This is error text" + loc,
+			want: "Error: This is error text" + loc + oneline,
 		},
 		{
 			what: "Note to error",
@@ -117,12 +142,12 @@ func TestFunctionsAndMethods(t *testing.T) {
 		{
 			what: "NoteAt to error",
 			err:  NoteAt(s, fmt.Errorf("This is error text"), "This is note"),
-			want: "Error: This is error text" + loc + "\n  Note: This is note",
+			want: "Error: This is error text" + loc + "\n  Note: This is note" + oneline,
 		},
 		{
 			what: "NotefAt to error",
 			err:  NotefAt(s, fmt.Errorf("This is error text"), "This is note: %d", 42),
-			want: "Error: This is error text" + loc + "\n  Note: This is note: 42",
+			want: "Error: This is error text" + loc + "\n  Note: This is note: 42" + oneline,
 		},
 		{
 			what: "NoteAt to locerr.Error",
@@ -362,31 +387,76 @@ func TestCodeSnippet(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.what, func(t *testing.T) {
 			src := NewDummySource(tc.code)
-			calcPos := func(offset int) Pos {
-				code := src.Code
-				o, l, c, end := 0, 1, 1, len(code)
-				for o != end {
-					if o == offset {
-						return Pos{o, l, c, src}
-					}
-					if code[o] == '\n' {
-						l++
-						c = 1
-					} else {
-						c++
-					}
-					o++
-				}
-				if o != offset {
-					t.Fatal("Offsetis illegal")
-				}
-				return Pos{o, l, c, src}
-			}
-			err := ErrorIn(calcPos(tc.from), calcPos(tc.to), "text")
+			err := ErrorIn(testCalcPos(src, tc.from), testCalcPos(src, tc.to), "text")
 			have := strings.SplitN(err.Error(), "\n", 3)[2]
 			want := strings.Join(tc.want, "\n") + "\n"
 			if have != want {
 				t.Fatalf("Unexpected snippet\n\nwant:\n'%s'\nhave:\n'%s'", want, have)
+			}
+		})
+	}
+}
+
+func TestOnelineSnip(t *testing.T) {
+	cases := []struct {
+		what string
+		code string
+		line int
+		want string
+	}{
+		{
+			what: "first line",
+			code: "aaa\nbbb\nccc",
+			line: 1,
+			want: "> aaa",
+		},
+		{
+			what: "second line",
+			code: "aaa\nbbb\nccc",
+			line: 2,
+			want: "> bbb",
+		},
+		{
+			what: "last line",
+			code: "aaa\nbbb\nccc",
+			line: 3,
+			want: "> ccc",
+		},
+		{
+			what: "empty line",
+			code: "aaa\n\nccc",
+			line: 2,
+			want: "",
+		},
+		{
+			what: "out of range",
+			code: "aaa\naaa\nbbb",
+			line: 4,
+			want: "",
+		},
+		{
+			what: "empty line at last",
+			code: "aaa\naaa\n",
+			line: 3,
+			want: "",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.what, func(t *testing.T) {
+			src := NewDummySource(tc.code)
+			// Only pos.Line is referred
+			err := ErrorAt(Pos{0, tc.line, 0, src}, "text")
+			if tc.want == "" {
+				have := err.Error()
+				lines := strings.Split(have, "\n")
+				if len(lines) != 1 || !strings.HasPrefix(lines[0], "Error: text (at <dummy>:") {
+					t.Fatal("Oneline snppet should be skipped but got:", have)
+				}
+			} else {
+				have := strings.Split(err.Error(), "\n")[2]
+				if have != tc.want {
+					t.Fatalf("Unexpected snippet\n\nwant:'%s'\nhave:'%s'", tc.want, have)
+				}
 			}
 		})
 	}
@@ -404,11 +474,15 @@ func TestCodeIsEmpty(t *testing.T) {
 	}
 }
 
+// Fallback into oneline snippet
 func TestSnipIsEmpty(t *testing.T) {
 	s := NewDummySource("abc")
 	p := Pos{1, 1, 2, s}
 	err := ErrorIn(p, p, "This is error text")
-	want := "Error: This is error text (at <dummy>:1:2)"
+	want := `Error: This is error text (at <dummy>:1:2)
+
+> abc
+`
 	got := err.Error()
 
 	if want != got {

@@ -122,12 +122,17 @@ func (err *Error) writeOnelineSnip(w io.Writer) {
 		return
 	}
 
-	end := start + 1
+	end := start
 	for end < len {
 		if code[end] == '\n' {
 			break
 		}
 		end++
+	}
+
+	if start == end {
+		// Snippet is empty. Skipped.
+		return
 	}
 
 	fmt.Fprint(w, "\n\n> ")
