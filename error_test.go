@@ -2,12 +2,13 @@ package locerr
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/fatih/color"
 )
 
-func TestErrorAndNote(t *testing.T) {
+func TestFunctionsAndMethods(t *testing.T) {
 	src := NewDummySource(
 		`int main() {
     foo(aaa,
@@ -25,7 +26,6 @@ func TestErrorAndNote(t *testing.T) {
 >     foo(aaa,
 >         bbb,
 >         ccc);
-
 `
 	loc := " (at <dummy>:2:9)"
 
@@ -171,11 +171,244 @@ func TestErrorAndNote(t *testing.T) {
 	}
 }
 
+func TestCodeSnippet(t *testing.T) {
+	cases := []struct {
+		what string
+		code string
+		from int
+		to   int
+		want []string
+	}{
+		{
+			what: "whole in a line",
+			code: "abc",
+			from: 0,
+			to:   2,
+			want: []string{
+				"> abc",
+			},
+		},
+		{
+			what: "slice in a line",
+			code: "abc",
+			from: 1,
+			to:   2,
+			want: []string{
+				"> abc",
+			},
+		},
+		{
+			what: "slice in a line with indent",
+			code: "	 abc",
+			from: 3,
+			to:   4,
+			want: []string{
+				"> 	 abc",
+			},
+		},
+		{
+			what: "only white spaces",
+			code: "	       ",
+			from: 3,
+			to:   4,
+			want: []string{
+				"> 	       ",
+			},
+		},
+		{
+			what: "whole two lines",
+			code: "aaa\nbbb",
+			from: 0,
+			to:   7,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "partial two lines",
+			code: "aaa\nbbb",
+			from: 2,
+			to:   5,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "indented two lines",
+			code: "	 aaa\n	 bbb",
+			from: 2,
+			to:   8,
+			want: []string{
+				"> 	 aaa",
+				"> 	 bbb",
+			},
+		},
+		{
+			what: "start on newline",
+			code: "aaa\nbbb",
+			from: 3,
+			to:   7,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "start just after newline",
+			code: "aaa\nbbb",
+			from: 4,
+			to:   7,
+			want: []string{
+				"> bbb",
+			},
+		},
+		{
+			what: "end just before newline",
+			code: "aaa\nbbb",
+			from: 1,
+			to:   2,
+			want: []string{
+				"> aaa",
+			},
+		},
+		{
+			what: "end on newline",
+			code: "aaa\nbbb",
+			from: 1,
+			to:   3,
+			want: []string{
+				"> aaa",
+			},
+		},
+		{
+			what: "end just after newline",
+			code: "aaa\nbbb",
+			from: 1,
+			to:   4,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "whole multi lines",
+			code: "aaa\nbbb\nccc\nddd\neee",
+			from: 0,
+			to:   19,
+			want: []string{
+				"> aaa",
+				"> bbb",
+				"> ccc",
+				"> ddd",
+				"> eee",
+			},
+		},
+		{
+			what: "whole multi indented lines",
+			code: "\t aaa\n\t\tbbb\n    ccc\n \tddd\neee",
+			from: 0,
+			to:   29,
+			want: []string{
+				"> 	 aaa",
+				"> 		bbb",
+				">     ccc",
+				">  	ddd",
+				"> eee",
+			},
+		},
+		{
+			what: "part of multi lines",
+			code: "aaa\nbbb\nccc\nddd\neee",
+			from: 5,
+			to:   14,
+			want: []string{
+				"> bbb",
+				"> ccc",
+				"> ddd",
+			},
+		},
+		{
+			what: "containing empty lines",
+			code: "aaa\n\n\nccc\n\neee",
+			from: 2,
+			to:   13,
+			want: []string{
+				"> aaa",
+				"> ",
+				"> ",
+				"> ccc",
+				"> ",
+				"> eee",
+			},
+		},
+		{
+			what: "containing only whitespaces lines",
+			code: "aaa\n   \n\t\nccc\n\neee",
+			from: 2,
+			to:   17,
+			want: []string{
+				"> aaa",
+				">    ",
+				"> 	",
+				"> ccc",
+				"> ",
+				"> eee",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.what, func(t *testing.T) {
+			src := NewDummySource(tc.code)
+			calcPos := func(offset int) Pos {
+				code := src.Code
+				o, l, c, end := 0, 1, 1, len(code)
+				for o != end {
+					if o == offset {
+						return Pos{o, l, c, src}
+					}
+					if code[o] == '\n' {
+						l++
+						c = 1
+					} else {
+						c++
+					}
+					o++
+				}
+				if o != offset {
+					t.Fatal("Offsetis illegal")
+				}
+				return Pos{o, l, c, src}
+			}
+			err := ErrorIn(calcPos(tc.from), calcPos(tc.to), "text")
+			have := strings.SplitN(err.Error(), "\n", 3)[2]
+			want := strings.Join(tc.want, "\n") + "\n"
+			if have != want {
+				t.Fatalf("Unexpected snippet\n\nwant:\n'%s'\nhave:\n'%s'", want, have)
+			}
+		})
+	}
+}
+
 func TestCodeIsEmpty(t *testing.T) {
 	s := NewDummySource("")
 	p := Pos{0, 1, 1, s}
 	err := ErrorIn(p, p, "This is error text")
 	want := "Error: This is error text (at <dummy>:1:1)"
+	got := err.Error()
+
+	if want != got {
+		t.Fatalf("Unexpected error message. want: '%s', got: '%s'", want, got)
+	}
+}
+
+func TestSnipIsEmpty(t *testing.T) {
+	s := NewDummySource("abc")
+	p := Pos{1, 1, 2, s}
+	err := ErrorIn(p, p, "This is error text")
+	want := "Error: This is error text (at <dummy>:1:2)"
 	got := err.Error()
 
 	if want != got {

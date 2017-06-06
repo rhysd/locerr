@@ -24,88 +24,100 @@ an error type which shows nice look error message.
 It's important to make a good error when compilation or execution errors found. [locerr][locerr document]
 helps it. This library is actually used in some my compiler implementation.
 
+To install, please use `go get`.
+
+```console
+$ go get -u github.com/rhysd/locerr
+```
+
+Following is an example code.
+
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/rhysd/locerr"
 	"os"
+
+	"github.com/rhysd/locerr"
 )
 
 func main() {
 	// At first you should gain entire source as *locerr.Source instance.
 
 	code :=
-		`package main
+		`function foo(x: bool): int {
+  return (if x then 42 else 21)
+}
 
-func main() {
-	foo := 42
-
-	foo := true
+function main() {
+  foo(true,
+      42,
+      "test")
 }`
 	src := locerr.NewDummySource(code)
 
-	// You can get *locerr.Source instance from file (locerr.NewSourceFromFile)
-	// or stdin (locerr.NewSourceFromStdin) also.
+	// You can get *locerr.Source instance from file (NewSourceFromFile) or stdin (NewSourceFromStdin) also.
 
-	// Let's say to find an error at some range in the source.
+	// Let's say to find an error at some range in the source. 'start' indicates the head of the first argument.
+    // 'end' indicates the end of the last argument.
 
 	start := locerr.Pos{
-		Offset: 41,
+		Offset: 88,
 		Line:   6,
-		Column: 2,
+		Column: 7,
 		File:   src,
 	}
 	end := locerr.Pos{
-		Offset: 52,
-		Line:   6,
+		Offset: 116,
+		Line:   9,
 		Column: 12,
 		File:   src,
 	}
 
-	// ErrorIn or other factory functions make a new error instance with the range. Error instance implements
-	// error interface so it can be handled like other error types.
+	// NewError or other factory functions make a new error instance with the range. locerr.Error instance
+	// implements error interface so it can be handled like other error types.
 
-	err := locerr.ErrorIn(start, end, "Found duplicate symbol 'foo'")
+	err := locerr.ErrorIn(start, end, "Calling 'foo' with wrong number of argument")
 
 	// Assume that you find additional information (location of variable and its type). Then you can add some
 	// notes to the error. Notes can be added by wrapping errors like pkg/errors library.
 
 	prev := locerr.Pos{
-		Offset: 26,
-		Line:   4,
-		Column: 1,
+		Offset: 9,
+		Line:   1,
+		Column: 10,
 		File:   src,
 	}
 
-	err = err.NoteAt(prev, "Defined here at first")
-	err = err.NoteAt(prev, "Previously defined as int")
+	err = err.NoteAt(prev, "Defined with 1 parameter")
+	err = err.NoteAt(prev, "'foo' was defined as 'bool -> int'")
 
 	// Finally you can see the result!
 
 	// Get the error message as string. Note that this is only for non-Windows OS.
-	msg := err.Error()
-	fmt.Println(msg)
+	fmt.Println(err)
 
 	// Directly writes the error message into given file.
 	// This supports Windows. Useful to output from stdout or stderr.
-	err.PrintToFile(os.Stderr)
+	err.PrintToFile(os.Stdout)
 }
 ```
 
 Above code should show the following output:
 
 ```
-Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
-    Note: Defined here at first (at <dummy>:4:1)
-    Note: Previously defined as int (at <dummy>:4:1)
+Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
+  Note: Defined with 1 parameter (at <dummy>:1:10)
+  Note: 'foo' was defined as 'bool -> int' (at <dummy>:1:10)
 
->       foo := true
+>   foo(true,
+>       42,
+>       "test")
 
 ```
 
-<img src="https://github.com/rhysd/ss/blob/master/loc/output.png?raw=true" width="371" alt="output screenshot"/>
+<img src="https://github.com/rhysd/ss/blob/master/locerr/output.png?raw=true" width="547" alt="output screenshot"/>
 
 Labels such as 'Error:' or 'Notes:' are colorized. Main error message is emphasized with bold font.
 And source code location information (file name, line and column) is added with gray text.

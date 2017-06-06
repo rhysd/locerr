@@ -85,6 +85,6 @@ And source code location information (file name, line and column) is added with 
 If the error has range information, the error shows code snippet which caused the error at the end
 of error message
 
-Colorized output can be seen at https://github.com/rhysd/ss/blob/master/loc/output.png?raw=true
+Colorized output can be seen at https://github.com/rhysd/ss/blob/master/locerr/output.png?raw=true
 */
 package locerr

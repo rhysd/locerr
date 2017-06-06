@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
@@ -16,10 +17,11 @@ func SetColor(enabled bool) {
 }
 
 var (
-	bold  = color.New(color.Bold)
-	red   = color.New(color.FgRed)
-	green = color.New(color.FgGreen)
-	gray  = color.New(color.FgHiBlack)
+	bold     = color.New(color.Bold)
+	red      = color.New(color.FgRed)
+	green    = color.New(color.FgGreen)
+	gray     = color.New(color.FgHiBlack)
+	emphasis = color.New(color.FgHiGreen, color.Bold, color.Underline)
 )
 
 // Error represents a compilation error with positional information and stacked messages.
@@ -29,76 +31,88 @@ type Error struct {
 	Messages []string
 }
 
-func (err *Error) snippetLines() [][]byte {
-	if err.End.File == nil {
-		return nil
+func writeSnipLine(w io.Writer, line string) {
+	indent, len := 0, len(line)
+	for indent < len {
+		if line[indent] != ' ' && line[indent] != '\t' {
+			break
+		}
+		indent++
 	}
+	if indent != 0 {
+		// Write indent without emphasis
+		fmt.Fprint(w, line[:indent])
+	}
+	if indent != len {
+		// Write code snip with emphasis
+		emphasis.Fprint(w, line[indent:])
+	}
+}
+
+func (err *Error) writeSnip(w io.Writer) {
+	fmt.Fprint(w, "\n\n> ")
 
 	code := err.Start.File.Code
-	start, end := err.Start.Offset, err.End.Offset
-	if start >= end {
-		return nil
-	}
-
-	// Fix first line and last line. Code snippet should be line-wise.
+	start := err.Start.Offset
 	for start-1 >= 0 {
 		if code[start-1] == '\n' {
 			break
 		}
 		start--
 	}
+	if start < err.Start.Offset {
+		// Write code before snip in first line
+		w.Write(code[start:err.Start.Offset])
+	}
+
+	lines := strings.Split(string(code[err.Start.Offset:err.End.Offset]), "\n")
+
+	// First line does not have "> " prefix
+	writeSnipLine(w, lines[0])
+
+	for _, line := range lines[1:] {
+		fmt.Fprint(w, "\n> ")
+		writeSnipLine(w, line)
+	}
+
+	end := err.End.Offset
 	for end < len(code) {
 		if code[end] == '\n' {
 			break
 		}
 		end++
 	}
-
-	snip := code[start:end]
-	lines := [][]byte{}
-	prev := 0
-	for i, b := range snip {
-		if b == '\n' {
-			lines = append(lines, snip[prev:i+1])
-			prev = i + 1
-		}
+	if err.End.Offset < end {
+		// Write code after snip in last line
+		w.Write(code[err.End.Offset:end])
 	}
-	lines = append(lines, snip[prev:])
-	return lines
+
+	fmt.Fprint(w, "\n")
+
+	// TODO:
+	// If the code snippet for the token is too long, skip lines with '...' except for starting N lines
+	// and ending N lines
 }
 
 func (err *Error) WriteMessage(w io.Writer) {
-	s := err.Start
-
 	// Error: {msg} (at {pos})
 	//   {note1}
 	//   {note2}
 	//   ...
 	red.Fprint(w, "Error: ")
 	bold.Fprint(w, err.Messages[0])
-	if s.File != nil {
-		gray.Fprintf(w, " (at %s)", s.String())
+	if err.Start.File != nil {
+		gray.Fprintf(w, " (at %s)", err.Start.String())
 	}
 	for _, msg := range err.Messages[1:] {
 		green.Fprint(w, "\n  Note: ")
 		fmt.Fprint(w, msg)
 	}
 
-	lines := err.snippetLines()
-	if len(lines) == 0 {
+	if err.End.File == nil || err.Start.Offset == err.End.Offset {
 		return
 	}
-
-	fmt.Fprint(w, "\n\n")
-	for _, line := range lines {
-		fmt.Fprint(w, "> ")
-		w.Write(line)
-	}
-	fmt.Fprint(w, "\n\n")
-
-	// TODO:
-	// If the code snippet for the token is too long, skip lines with '...' except for starting N lines
-	// and ending N lines
+	err.writeSnip(w)
 }
 
 // Error builds error message for the error.
