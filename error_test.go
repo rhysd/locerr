@@ -206,6 +206,157 @@ func TestCodeSnippet(t *testing.T) {
 				"> 	 abc",
 			},
 		},
+		{
+			what: "only white spaces",
+			code: "	       ",
+			from: 3,
+			to:   4,
+			want: []string{
+				"> 	       ",
+			},
+		},
+		{
+			what: "whole two lines",
+			code: "aaa\nbbb",
+			from: 0,
+			to:   7,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "partial two lines",
+			code: "aaa\nbbb",
+			from: 2,
+			to:   5,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "indented two lines",
+			code: "	 aaa\n	 bbb",
+			from: 2,
+			to:   8,
+			want: []string{
+				"> 	 aaa",
+				"> 	 bbb",
+			},
+		},
+		{
+			what: "start on newline",
+			code: "aaa\nbbb",
+			from: 3,
+			to:   7,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "start just after newline",
+			code: "aaa\nbbb",
+			from: 4,
+			to:   7,
+			want: []string{
+				"> bbb",
+			},
+		},
+		{
+			what: "end just before newline",
+			code: "aaa\nbbb",
+			from: 1,
+			to:   2,
+			want: []string{
+				"> aaa",
+			},
+		},
+		{
+			what: "end on newline",
+			code: "aaa\nbbb",
+			from: 1,
+			to:   3,
+			want: []string{
+				"> aaa",
+			},
+		},
+		{
+			what: "end just after newline",
+			code: "aaa\nbbb",
+			from: 1,
+			to:   4,
+			want: []string{
+				"> aaa",
+				"> bbb",
+			},
+		},
+		{
+			what: "whole multi lines",
+			code: "aaa\nbbb\nccc\nddd\neee",
+			from: 0,
+			to:   19,
+			want: []string{
+				"> aaa",
+				"> bbb",
+				"> ccc",
+				"> ddd",
+				"> eee",
+			},
+		},
+		{
+			what: "whole multi indented lines",
+			code: "\t aaa\n\t\tbbb\n    ccc\n \tddd\neee",
+			from: 0,
+			to:   29,
+			want: []string{
+				"> 	 aaa",
+				"> 		bbb",
+				">     ccc",
+				">  	ddd",
+				"> eee",
+			},
+		},
+		{
+			what: "part of multi lines",
+			code: "aaa\nbbb\nccc\nddd\neee",
+			from: 5,
+			to:   14,
+			want: []string{
+				"> bbb",
+				"> ccc",
+				"> ddd",
+			},
+		},
+		{
+			what: "containing empty lines",
+			code: "aaa\n\n\nccc\n\neee",
+			from: 2,
+			to:   13,
+			want: []string{
+				"> aaa",
+				"> ",
+				"> ",
+				"> ccc",
+				"> ",
+				"> eee",
+			},
+		},
+		{
+			what: "containing only whitespaces lines",
+			code: "aaa\n   \n\t\nccc\n\neee",
+			from: 2,
+			to:   17,
+			want: []string{
+				"> aaa",
+				">    ",
+				"> 	",
+				"> ccc",
+				"> ",
+				"> eee",
+			},
+		},
 	}
 
 	for _, tc := range cases {
