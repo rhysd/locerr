@@ -141,7 +141,25 @@ Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
 Labels such as 'Error:' or 'Notes:' are colorized. Main error message is emphasized with bold font.
 And source code location information (file name, line and column) is added with gray text.
 If the error has range information, the error shows code snippet which caused the error at the end
-of error message
+of error message.
+
+If you have only one position information rather than two, 'start' position and 'end' position,
+`ErrorAt` is available instead of `ErrorIn`. `ErrorAt` takes one `Pos` instance.
+
+```go
+err := locerr.ErrorAt(start, "Calling 'foo' with wrong number of argument")
+```
+
+In this case, line snippet is shown in error message. `pos.Line` is used to get line from source text.
+`fmt.Println(err)` will show the following.
+
+```
+Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
+
+>   foo(true,
+
+```
+
 
 ## Development
 
