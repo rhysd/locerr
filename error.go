@@ -76,7 +76,8 @@ func (err *Error) writeSnip(w io.Writer) {
 	}
 
 	end := err.End.Offset
-	for end < len(code) {
+	len := len(code)
+	for end < len {
 		if code[end] == '\n' {
 			break
 		}
@@ -94,6 +95,46 @@ func (err *Error) writeSnip(w io.Writer) {
 	// and ending N lines
 }
 
+func lineStartOffset(code []byte, lnum int) int {
+	l := 1
+	for i, r := range code {
+		if l == lnum {
+			return i
+		}
+		if r == '\n' {
+			l++
+		}
+	}
+	return -1
+}
+
+// Show line based on err.Start.Line. We don't use offset for this because some environment offset
+// cannot be obtained (e.g. getting location from runtime.Caller).
+func (err *Error) writeOnelineSnip(w io.Writer) {
+	code := err.Start.File.Code
+	len := len(code)
+	if len == 0 {
+		return
+	}
+
+	start := lineStartOffset(code, err.Start.Line)
+	if start == -1 {
+		return
+	}
+
+	end := start + 1
+	for end < len {
+		if code[end] == '\n' {
+			break
+		}
+		end++
+	}
+
+	fmt.Fprint(w, "\n\n> ")
+	w.Write(code[start:end])
+	w.Write([]byte{'\n'})
+}
+
 func (err *Error) WriteMessage(w io.Writer) {
 	// Error: {msg} (at {pos})
 	//   {note1}
@@ -109,7 +150,11 @@ func (err *Error) WriteMessage(w io.Writer) {
 		fmt.Fprint(w, msg)
 	}
 
+	if err.Start.File == nil {
+		return
+	}
 	if err.End.File == nil || err.Start.Offset == err.End.Offset {
+		err.writeOnelineSnip(w)
 		return
 	}
 	err.writeSnip(w)

@@ -165,7 +165,7 @@ func TestFunctionsAndMethods(t *testing.T) {
 		t.Run(tc.what, func(t *testing.T) {
 			have := tc.err.Error()
 			if have != tc.want {
-				t.Fatalf("Unexpected error message.\nwant:\n\n'%s'\nhave:\n\n'%s'", tc.want, have)
+				t.Fatalf("Unexpected error message.\nwant:\n'%s'\nhave:\n'%s'", tc.want, have)
 			}
 		})
 	}
