@@ -60,25 +60,20 @@ Finally you can see the result! err.Error() gets the error message as string. No
 non-Windows OS.
 
     fmt.Println(err)
-    // Output:
-    // Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
-    //   Note: Defined here at first (at <dummy>:4:1)
-    //   Note: Previously defined as int (at <dummy>:4:1)
-    //
-    // >       foo := true
-    //
+
+It should output following:
+
+    Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
+      Note: Defined here at first (at <dummy>:4:1)
+      Note: Previously defined as int (at <dummy>:4:1)
+
+    >       foo := true
+
 
 To support Windows, please use PrintToFile() method. It directly writes the error message into given file.
 This supports Windows and is useful to output from stdout or stderr.
 
     err.PrintToFile(os.Stderr)
-    // Output:
-    // Error: Found duplicate symbol 'foo' (at <dummy>:6:1)
-    //   Note: Defined here at first (at <dummy>:4:1)
-    //   Note: Previously defined as int (at <dummy>:4:1)
-    //
-    // >       foo := true
-    //
 
 Labels such as 'Error:' or 'Notes:' are colorized. Main error message is emphasized with bold font.
 And source code location information (file name, line and column) is added with gray text.
@@ -95,11 +90,14 @@ ErrorAt() is available instead of ErrorIn() ErrorAt() takes one Pos instance.
 In this case, line snippet is shown in error message. `pos.Line` is used to get line from source text.
 
     fmt.Println(err)
-    // Output:
-    // Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
-    //
-    // >   foo(true,
-    //
+
+It should output following:
+
+    Output:
+    Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
+
+    >   foo(true,
+
 
 */
 package locerr
