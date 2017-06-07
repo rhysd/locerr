@@ -3,14 +3,9 @@ package locerr
 import (
 	"fmt"
 	"os"
-	"testing"
 )
 
-func TestExample(t *testing.T) {
-	// At first you should gain entire source as *Source instance.
-
-	code :=
-		`function foo(x: bool): int {
+const code = `function foo(x: bool): int {
   return (if x then 42 else 21)
 }
 
@@ -19,6 +14,10 @@ function main() {
       42,
       "test")
 }`
+
+func ExampleErrorWithRange() {
+	// At first you should gain entire source as *Source instance.
+
 	src := NewDummySource(code)
 
 	// You can get *Source instance from file (NewSourceFromFile) or stdin (NewSourceFromStdin) also.
@@ -60,36 +59,26 @@ function main() {
 
 	// Get the error message as string. Note that this is only for non-Windows OS.
 	fmt.Println(err)
-	// Output:
-	// Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
-	//   Note: Defined with 1 parameter (at <dummy>:1:10)
-	//   Note: 'foo' was defined as 'bool -> int' (at <dummy>:1:10)
-	//
-	// >   foo(true,
-	// >       42,
-	// >       "test")
-	//
 
 	// Directly writes the error message into given file.
 	// This supports Windows. Useful to output from stdout or stderr.
 	err.PrintToFile(os.Stdout)
-	// Output:
-	// Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
-	//   Note: Defined with 1 parameter (at <dummy>:1:10)
-	//   Note: 'foo' was defined as 'bool -> int' (at <dummy>:1:10)
-	//
-	// >   foo(true,
-	// >       42,
-	// >       "test")
+}
+
+func ExampleErrorWithOnePos() {
+	src := NewDummySource(code)
+
+	pos := Pos{
+		Offset: 88,
+		Line:   6,
+		Column: 7,
+		File:   src,
+	}
 
 	// If you have only one position information rather than two, 'start' position and 'end' position,
 	// ErrorAt() is available instead of ErrorIn() ErrorAt() takes one Pos instance.
-	err = ErrorAt(start, "Calling 'foo' with wrong number of argument")
+	err := ErrorAt(pos, "Calling 'foo' with wrong number of argument")
 
 	// In this case, line snippet is shown in error message. `pos.Line` is used to get line from source text.
 	fmt.Println(err)
-	// Output:
-	// Error: Calling 'foo' with wrong number of argument (at <dummy>:6:7)
-	//
-	// >   foo(true,
 }
