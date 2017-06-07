@@ -1,4 +1,4 @@
-package locerr_fuzz
+package locerrfuzzing
 
 import (
 	"github.com/rhysd/locerr"
@@ -23,6 +23,7 @@ func offsetPos(src *locerr.Source, offset int) locerr.Pos {
 	return locerr.Pos{o, l, c, src}
 }
 
+// Fuzz do fuzzing test using go-fuzz
 func Fuzz(data []byte) int {
 	src := locerr.NewDummySource(string(data))
 	len := len(data)

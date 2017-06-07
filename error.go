@@ -140,6 +140,7 @@ func (err *Error) writeOnelineSnip(w io.Writer) {
 	w.Write([]byte{'\n'})
 }
 
+// WriteMessage writes error message to the given writer
 func (err *Error) WriteMessage(w io.Writer) {
 	// Error: {msg} (at {pos})
 	//   {note1}
@@ -217,7 +218,7 @@ func ErrorAt(pos Pos, msg string) *Error {
 	return ErrorIn(pos, Pos{}, msg)
 }
 
-// NewErrorf makes locerr.Error instance without source location information following given format.
+// Errorf makes locerr.Error instance without source location information following given format.
 func Errorf(format string, args ...interface{}) *Error {
 	return NewError(fmt.Sprintf(format, args...))
 }

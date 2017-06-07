@@ -12,7 +12,7 @@ specific range or position in source.
 This library is useful to provide a unified look for error messages raised by compilers, interpreters
 or translators.
 
-By using `locerr.Source` and `locerr.Position` types as position information, this library can provide
+By using `locerr.Source` and `locerr.Pos` types as position information, this library can provide
 an error type which shows nice look error message.
 
 - It shows the code snippet which caused an error
