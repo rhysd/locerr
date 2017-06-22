@@ -184,6 +184,21 @@ func TestFunctionsAndMethods(t *testing.T) {
 			err:  Note(ErrorIn(s, e, "This is error text"), "This is note").NoteAt(s, "This is note second"),
 			want: "Error: This is error text" + loc + "\n  Note: This is note\n  Note: This is note second" + loc + snip,
 		},
+		{
+			what: "set range later",
+			err:  NewError("This is error text").In(s, e),
+			want: "Error: This is error text" + loc + snip,
+		},
+		{
+			what: "set pos later",
+			err:  NewError("This is error text").At(s),
+			want: "Error: This is error text" + loc + oneline,
+		},
+		{
+			what: "overwrite range with pos",
+			err:  NewError("This is error text").In(s, e).At(s),
+			want: "Error: This is error text" + loc + oneline,
+		},
 	}
 
 	for _, tc := range cases {

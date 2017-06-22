@@ -203,6 +203,20 @@ func (err *Error) NotefAt(pos Pos, format string, args ...interface{}) *Error {
 	return err.NoteAt(pos, fmt.Sprintf(format, args...))
 }
 
+// In sets start and end positions of the error.
+func (err *Error) In(start, end Pos) *Error {
+	err.Start = start
+	err.End = end
+	return err
+}
+
+// At sets a position where error occurred.
+func (err *Error) At(pos Pos) *Error {
+	err.Start = pos
+	err.End = Pos{}
+	return err
+}
+
 // NewError makes locerr.Error instance without source location information.
 func NewError(msg string) *Error {
 	return &Error{Pos{}, Pos{}, []string{msg}}
