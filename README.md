@@ -65,7 +65,7 @@ func main() {
 	// At first you should gain entire source as *locerr.Source instance.
 
 	code :=
-		`function foo(x: bool): int {
+`function foo(x: bool): int {
   return (if x then 42 else 21)
 }
 
